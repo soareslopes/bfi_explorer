@@ -1,0 +1,1801 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bike Friendly Index · Portugal</title>
+
+<script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css">
+<script src="https://unpkg.com/deck.gl@8.9.33/dist.min.js"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #0b0f14;
+    --surface: rgba(28, 25, 15, 0.92);
+    --surface-solid: #0f141c;
+    --border: rgba(255,255,255,0.07);
+    --accent: #4af0a0;
+    --accent2: #2dd4f7;
+    --warn: #f97316;
+    --text: #daf0e5;
+    --text-inv: #daf0e5;
+    --muted: #7aaa8e;
+    --sidebar-w: 56px;
+    --right-panel-w: 20vw;
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Roboto Condensed', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  /* ── MAP ── */
+  #map {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* ── SIDEBAR ── */
+  #sidebar {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: var(--sidebar-w);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 0;
+    gap: 4px;
+    z-index: 100;
+    backdrop-filter: blur(16px);
+  }
+
+  .sidebar-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    color: var(--accent);
+    padding: 0 0 16px 0;
+    border-bottom: 1px solid var(--border);
+    width: 100%;
+    margin-bottom: 4px;
+  }
+  .sidebar-logo .logo-icon {
+    width: 26px; height: 26px;
+    stroke: var(--accent);
+  }
+  .sidebar-logo .logo-text {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+  }
+
+  .sidebar-sep {
+    width: 32px;
+    height: 1px;
+    background: var(--border);
+    margin: 4px 0;
+  }
+
+  .nav-btn {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .nav-btn:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+  .nav-btn.active {
+    background: rgba(74,240,160,0.1);
+    border-color: rgba(74,240,160,0.3);
+    color: var(--accent);
+  }
+  .nav-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+  .nav-btn .tooltip {
+    position: absolute;
+    left: calc(100% + 12px);
+    top: 50%; transform: translateY(-50%);
+    background: var(--surface-solid);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 11px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 200;
+  }
+  .nav-btn:hover .tooltip { opacity: 1; }
+
+  .sidebar-spacer { flex: 1; }
+
+  /* ── PANELS (flyout) ── */
+  .panel {
+    position: absolute;
+    left: calc(var(--sidebar-w) + 8px);
+    top: 12px; /* overridden by JS per button */
+    width: 280px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    backdrop-filter: blur(20px);
+    padding: 16px;
+    z-index: 99;
+    display: none;
+    animation: slideIn 0.18s ease;
+  }
+  .panel.open { display: block; }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-8px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  /* ── MAP HINT ── */
+  #map-hint {
+    position: absolute;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.38);
+    color: rgba(255,255,255,0.82);
+    font-size: 10px;
+    padding: 5px 14px;
+    border-radius: 20px;
+    pointer-events: none;
+    z-index: 50;
+    backdrop-filter: blur(8px);
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+  body.light-mode #map-hint {
+    background: rgba(255,255,255,0.55);
+    color: rgba(0,0,0,0.55);
+  }
+
+  .panel-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  /* City search */
+  #city-search {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    padding: 8px 10px;
+    outline: none;
+    margin-bottom: 8px;
+    transition: border-color 0.2s;
+  }
+  #city-search:focus { border-color: rgba(74,240,160,0.4); }
+  #city-search::placeholder { color: var(--muted); }
+
+  #city-list {
+    max-height: 220px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  .city-item {
+    padding: 7px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    cursor: pointer;
+    color: var(--text);
+    transition: background 0.15s;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .city-item:hover { background: rgba(255,255,255,0.06); }
+  .city-item .city-rank { color: var(--muted); font-size: 10px; }
+
+  /* Indicator selector */
+  .indicator-option {
+    padding: 9px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    margin-bottom: 4px;
+    transition: all 0.15s;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .indicator-option:hover { background: rgba(255,255,255,0.05); }
+  .indicator-option.selected {
+    background: rgba(74,240,160,0.18);
+    border-color: rgba(74,240,160,0.5);
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .ind-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* Year selector */
+  .year-option {
+    padding: 9px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    margin-bottom: 6px;
+    transition: all 0.15s;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .year-option:hover { background: rgba(255,255,255,0.05); }
+  .year-option.selected {
+    background: rgba(45,212,247,0.18);
+    border-color: rgba(45,212,247,0.55);
+    color: var(--accent2);
+    font-weight: 700;
+  }
+  .year-badge {
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.08);
+    color: var(--muted);
+  }
+  .year-badge.avail { background: rgba(74,240,160,0.15); color: var(--accent); }
+
+  /* Year A/B selector buttons */
+  .year-ab-btns { display: flex; gap: 4px; }
+  .year-ab-btn {
+    font-size: 9px; font-weight: 700;
+    padding: 2px 7px; border-radius: 4px;
+    border: 1px solid var(--border);
+    background: transparent; color: var(--muted);
+    cursor: pointer; transition: all 0.15s;
+    font-family: 'Roboto Condensed', sans-serif;
+    letter-spacing: 0.05em;
+  }
+  .year-ab-btn.sel-a {
+    background: rgba(45,212,247,0.2);
+    border-color: rgba(45,212,247,0.6);
+    color: var(--accent2);
+  }
+  .year-ab-btn.sel-b {
+    background: rgba(249,115,22,0.2);
+    border-color: rgba(249,115,22,0.6);
+    color: var(--warn);
+  }
+
+  /* Compare toggle */
+  .compare-toggle {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 11px; color: var(--muted);
+  }
+  .toggle-switch {
+    width: 32px; height: 18px;
+    background: var(--border);
+    border-radius: 9px;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.2s;
+  }
+  .toggle-switch.on { background: var(--accent2); }
+  .toggle-switch::after {
+    content: '';
+    position: absolute;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: white;
+    top: 3px; left: 3px;
+    transition: transform 0.2s;
+  }
+  .toggle-switch.on::after { transform: translateX(14px); }
+
+  /* Info panel */
+  .info-section { margin-bottom: 12px; }
+  .info-label {
+    font-size: 9px; letter-spacing: 0.1em;
+    color: var(--muted); text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .info-text { font-size: 11px; line-height: 1.6; color: var(--text); }
+  .cc-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 8px;
+    font-size: 10px; color: var(--muted);
+    margin-top: 8px;
+  }
+
+  /* ── RIGHT PANEL ── */
+  #right-panel {
+    position: absolute;
+    top: 12px; right: 12px; bottom: 12px;
+    width: var(--right-panel-w);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 90;
+    transition: transform 0.45s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease;
+  }
+  #right-panel.hidden {
+    transform: translateX(calc(var(--right-panel-w) + 20px));
+    opacity: 0;
+    pointer-events: none;
+  }
+  #right-panel.visible {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  /* Botão colapsar */
+  #collapse-btn {
+    position: absolute;
+    top: 50%;
+    right: calc(var(--right-panel-w) + 16px);
+    transform: translateY(-50%);
+    width: 24px; height: 48px;
+    background: rgba(255, 255, 255, 0.10);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px 0 0 8px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 91;
+    transition: right 0.45s cubic-bezier(0.4,0,0.2,1), background 0.2s;
+    backdrop-filter: blur(8px);
+    color: var(--accent);
+  }
+  #collapse-btn:hover { background: rgba(255,255,255,0.18); }
+  #collapse-btn.collapsed { right: 16px; }
+  #collapse-btn svg { transition: transform 0.3s; }
+  #collapse-btn.collapsed svg { transform: rotate(180deg); }
+
+  .bcard {
+    background: rgba(255, 255, 255, 0.10);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius);
+    backdrop-filter: blur(8px);
+    padding: 16px;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+  }
+
+  .bcard-title {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    color: #7aaa8e;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  /* Card 1 – Summary */
+  .city-name-big {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #daf0e5;
+    margin-bottom: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .stat-item { }
+  .stat-label { font-size: 9px; color: #7aaa8e; letter-spacing: 0.08em; text-transform: uppercase; }
+  .stat-value { font-size: 13px; color: #daf0e5; margin-top: 1px; font-weight: 600; }
+  .stat-value.accent { color: #f97316; }
+  .bikeshare-pill {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin-top: 2px;
+    font-weight: 600;
+  }
+  .bikeshare-pill.yes { background: rgba(0,80,30,0.18); color: #1a7a40; }
+  .bikeshare-pill.no  { background: rgba(0,0,0,0.06); color: #f00a0a; }
+
+  /* Card 2 – Radar/Bar */
+  .chart-toggle {
+    display: flex; gap: 4px; margin-bottom: 8px;
+    align-items: center; justify-content: space-between;
+  }
+  .chart-toggle-btns { display: flex; gap: 4px; }
+  .ct-btn {
+    font-size: 10px; padding: 3px 8px;
+    border-radius: 4px; border: 1px solid rgba(0,0,0,0.12);
+    background: transparent; color: #7aaa8e;
+    cursor: pointer; transition: all 0.15s;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 600; letter-spacing: 0.05em;
+  }
+  .ct-btn.active { background: rgba(192,80,0,0.1); border-color: rgba(192,80,0,0.3); color: #c05000; }
+
+  .radar-legend {
+    display: flex; gap: 10px; font-size: 10px; color: #7aaa8e;
+    align-items: center;
+  }
+  .legend-item { display: flex; align-items: center; gap: 4px; }
+  .legend-line {
+    width: 16px; height: 2px; border-radius: 1px;
+  }
+
+  #radar-canvas, #bar-canvas { width: 100%; display: block; flex: 1; min-height: 0; }
+  #bar-canvas { display: none; }
+
+  /* Card 3 – Gauge */
+  #gauge-wrap {
+    display: flex; align-items: center; justify-content: center;
+    height: calc(100% - 28px);
+  }
+  .gauge-container { position: relative; display: flex; align-items: center; justify-content: center; }
+  .gauge-label-center {
+    position: absolute;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .gauge-score {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 46px;
+    line-height: 1;
+    color: #daf0e5;
+  }
+  .gauge-sub { font-size: 13px; color: #7aaa8e; margin-top: 3px; letter-spacing: 0.1em; }
+  .gauge-rank {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 12px; font-weight: 600;
+    color: #f97316;
+    text-align: center;
+    margin-top: 6px;
+  }
+
+  /* ── HOVER TOOLTIP ── */
+  #map-tooltip {
+    position: absolute;
+    pointer-events: none;
+    background: var(--surface-solid);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 11px;
+    z-index: 200;
+    display: none;
+  }
+  #map-tooltip .tt-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+  #map-tooltip .tt-val { color: var(--accent); }
+
+  /* ── COMPARE BADGE ── */
+  #compare-badge {
+    position: absolute;
+    top: 12px; left: calc(var(--sidebar-w) + 12px);
+    background: rgba(45,212,247,0.12);
+    border: 1px solid rgba(45,212,247,0.3);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 11px;
+    color: var(--accent2);
+    z-index: 100;
+    display: none;
+  }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* ── FLOATING LEFT OVERLAY ── */
+  #float-left {
+    position: absolute;
+    left: calc(var(--sidebar-w) + 20px);
+    top: 20px;
+    z-index: 90;
+    display: none;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    pointer-events: none;
+  }
+  #float-left > * { pointer-events: auto; }
+
+  #float-gauge { text-align: center; }
+
+  #float-left .city-name-big {
+    font-size: 30px;
+    margin-bottom: 4px;
+  }
+
+  .float-stats { display: flex; flex-direction: column; gap: 5px; }
+  .float-stat  { display: flex; justify-content: space-between; align-items: baseline; gap: 20px; }
+  .float-stat .stat-label {
+    font-size: 13px; color: var(--muted);
+    letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap;
+  }
+  .float-stat .stat-value {
+    font-size: 18px; font-weight: 600; color: var(--text); text-align: right;
+  }
+  .float-stat .stat-value.accent { color: var(--warn); }
+
+  #float-left .bikeshare-pill { font-size: 15px; padding: 2px 9px; }
+
+  #details-btn {
+    margin-top: 6px;
+    padding: 6px 14px;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+    background: rgba(74,240,160,0.15);
+    border: 1px solid rgba(74,240,160,0.45);
+    border-radius: 8px; color: var(--accent);
+    cursor: pointer; transition: all 0.15s;
+  }
+  #details-btn:hover { background: rgba(74,240,160,0.28); border-color: rgba(74,240,160,0.75); }
+  #details-btn.open  { background: rgba(74,240,160,0.22); border-color: rgba(74,240,160,0.75); }
+
+  body.light-mode #details-btn {
+    background: rgba(26,138,82,0.12);
+    border-color: rgba(26,138,82,0.45);
+    color: #1a8a52;
+  }
+
+  /* ── RADAR MODAL ── */
+  #radar-modal {
+    display: none;
+    position: absolute;
+    z-index: 95;
+    width: 340px;
+    background: rgba(11,15,20,0.90);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: var(--radius);
+    backdrop-filter: blur(18px);
+    padding: 16px;
+  }
+  body.light-mode #radar-modal {
+    background: rgba(200,228,215,0.90);
+    border-color: rgba(0,60,30,0.18);
+  }
+  #radar-modal #radar-canvas { width: 100%; height: 280px; display: block; }
+  #radar-modal #bar-canvas   { width: 100%; height: 280px; }
+
+  /* ── SLIDER ── */
+  .range-row { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+  .range-row span { font-size:10px; color:var(--muted); white-space:nowrap; }
+  input[type='range'] {
+    flex:1; -webkit-appearance:none; appearance:none; height:4px;
+    border-radius:2px; background:var(--border); outline:none; cursor:pointer;
+  }
+  input[type='range']::-webkit-slider-thumb {
+    -webkit-appearance:none; appearance:none; width:14px; height:14px;
+    border-radius:50%; background:var(--accent); cursor:pointer;
+  }
+  input[type='range']::-moz-range-thumb {
+    width:14px; height:14px; border:none;
+    border-radius:50%; background:var(--accent); cursor:pointer;
+  }
+  .range-value { font-size:10px; color:var(--accent); text-align:center; margin-top:4px; }
+
+  /* ── COLOR SCHEME ── */
+  .scheme-option {
+    display:flex; align-items:center; gap:10px;
+    padding:8px 10px; border-radius:8px; cursor:pointer;
+    border:1px solid transparent; margin-bottom:4px; transition:all 0.15s;
+  }
+  .scheme-option:hover { background:rgba(255,255,255,0.05); }
+  .scheme-option.selected { border-color:rgba(74,240,160,0.55); background:rgba(74,240,160,0.18); font-weight:700; }
+  .scheme-swatch {
+    width:60px; height:10px; border-radius:3px; flex-shrink:0;
+    border:1px solid rgba(255,255,255,0.1);
+  }
+  .scheme-label { font-size:11px; color:var(--text); }
+
+  /* ── LIGHT MODE ── */
+  body.light-mode {
+    --bg: #edf4f0;
+    --surface: rgba(210, 238, 222, 0.74);
+    --surface-solid: #cce4d8;
+    --border: rgba(0,60,30,0.15);
+    --accent: #1a8a52;
+    --accent2: #1a6a9a;
+    --warn: #c05000;
+    --text: #0d2018;
+    --text-inv: #0d2018;
+    --muted: #4a7060;
+  }
+  body.light-mode .bcard {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(0,60,30,0.12);
+  }
+  body.light-mode .bcard-title { color: #4a7060; }
+  body.light-mode .city-name-big { color: #0d2018; }
+  body.light-mode .stat-label { color: #4a7060; }
+  body.light-mode .stat-value { color: #0d2018; }
+  body.light-mode .gauge-score { color: #0d2018; }
+  body.light-mode .gauge-sub { color: #4a7060; }
+  body.light-mode .gauge-rank { color: #c05000; }
+  body.light-mode .ct-btn { color: #4a7060; border-color: rgba(0,0,0,0.15); }
+  body.light-mode .ct-btn.active { background: rgba(192,80,0,0.1); border-color: rgba(192,80,0,0.3); color: #c05000; }
+  body.light-mode .radar-legend { color: #4a7060; }
+  body.light-mode #collapse-btn {
+    background: rgba(255,255,255,0.60);
+    border-color: rgba(0,60,30,0.15);
+    color: #1a8a52;
+  }
+  body.light-mode #collapse-btn:hover { background: rgba(255,255,255,0.5); }
+  body.light-mode #map-tooltip {
+    background: #cce4d8;
+    color: #0d2018;
+    border-color: rgba(0,60,30,0.2);
+  }
+  body.light-mode .gauge-container svg circle[fill="none"] { stroke: rgba(0,0,0,0.08); }
+  body.light-mode .indicator-option.selected {
+    background: rgba(26,138,82,0.15);
+    border-color: rgba(26,138,82,0.6);
+    color: #1a8a52;
+  }
+  body.light-mode .year-option.selected {
+    background: rgba(26,106,154,0.15);
+    border-color: rgba(26,106,154,0.6);
+    color: #1a6a9a;
+  }
+  body.light-mode .scheme-option.selected {
+    background: rgba(26,138,82,0.15);
+    border-color: rgba(26,138,82,0.6);
+  }
+</style>
+</head>
+<body class="light-mode">
+
+<div id="map"></div>
+<div id="map-hint">Clique para selecionar · Arraste com botão direito para rodar</div>
+<div id="map-tooltip"><div class="tt-name" id="tt-name"></div><div id="tt-val"></div></div>
+<div id="compare-badge">Modo comparação: variação entre anos</div>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sidebar-logo">
+    <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="5" cy="17" r="3"/>
+      <circle cx="19" cy="17" r="3"/>
+      <path d="M5 17 9 9 12 17 16 9 19 17"/>
+      <path d="M9 9 H16"/>
+      <path d="M7 8 H11"/>
+      <path d="M16 9 V7 M14 7 H18"/>
+    </svg>
+    <span class="logo-text">BFI</span>
+  </div>
+
+  <button class="nav-btn" id="btn-home" onclick="goHome()" title="">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span class="tooltip">Início · Portugal</span>
+  </button>
+
+  <div class="sidebar-sep"></div>
+
+  <button class="nav-btn" id="btn-city"
+    onmouseenter="openHoverPanel('city')"
+    onmouseleave="startCloseHoverPanel('city')" title="">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+  </button>
+
+  <button class="nav-btn" id="btn-indicator"
+    onmouseenter="openHoverPanel('indicator')"
+    onmouseleave="startCloseHoverPanel('indicator')" title="">
+    <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+  </button>
+
+  <button class="nav-btn" id="btn-year"
+    onmouseenter="openHoverPanel('year')"
+    onmouseleave="startCloseHoverPanel('year')" title="">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+  </button>
+
+  <div class="sidebar-sep"></div>
+  <div class="sidebar-spacer"></div>
+
+  <button class="nav-btn" id="btn-colorscheme"
+    onclick="toggleColorInvert()" title="">
+    <span class="tooltip">Inverter cores</span>
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20"/><path d="M12 2C6.48 2 2 6.48 2 12"/><circle cx="12" cy="12" r="3"/></svg>
+  </button>
+
+  <button class="nav-btn" id="btn-theme" onclick="toggleTheme()" title="">
+    <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    <span class="tooltip">Modo Claro / Escuro</span>
+  </button>
+
+  <button class="nav-btn" id="btn-info" onclick="toggleStickyPanel('info')" title="">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span class="tooltip">Sobre o projeto</span>
+  </button>
+</nav>
+
+<!-- PANEL: City -->
+<div class="panel" id="panel-city"
+  onmouseenter="cancelCloseHoverPanel()"
+  onmouseleave="startCloseHoverPanel('city')">
+  <div class="panel-title">Selecionar Concelho</div>
+  <input type="text" id="city-search" placeholder="Pesquisar..." oninput="filterCities(this.value)">
+  <div style="font-size:9px;font-weight:700;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;margin-bottom:4px;">Ranking</div>
+  <div id="city-list"></div>
+</div>
+
+<!-- PANEL: Indicator -->
+<div class="panel" id="panel-indicator"
+  onmouseenter="cancelCloseHoverPanel()"
+  onmouseleave="startCloseHoverPanel('indicator')">
+  <div class="panel-title">Indicador</div>
+  <div id="indicator-list"></div>
+</div>
+
+<!-- PANEL: Year -->
+<div class="panel" id="panel-year"
+  onmouseenter="cancelCloseHoverPanel()"
+  onmouseleave="startCloseHoverPanel('year')">
+  <div class="panel-title">Fonte dos Dados</div>
+  <div id="year-list"></div>
+  <div class="compare-toggle" id="compare-section" style="display:none">
+    <div class="toggle-row">
+      <span>Modo Comparação</span>
+      <div class="toggle-switch" id="compare-toggle" onclick="toggleCompare()"></div>
+    </div>
+    <div style="font-size:10px;color:var(--muted);margin-top:6px;">Mostra a variação entre anos por indicador</div>
+  </div>
+</div>
+
+
+
+<!-- PANEL: Info -->
+<div class="panel" id="panel-info">
+  <div class="panel-title">Sobre o projeto</div>
+  <div class="info-section">
+    <div class="info-label">Autoria</div>
+    <div class="info-text">A. P. Figueiredo e D. S. Vale<br>BEAM · Faculdade de Arquitectura<br>Universidade de Lisboa</div>
+  </div>
+  <div class="info-section">
+    <div class="info-label">Descrição</div>
+    <div class="info-text">O Bike Friendly Index avalia a ciclabilidade dos concelhos de Portugal com base em 5 dimensões.</div>
+  </div>
+  <div class="info-section">
+    <div class="info-label">Citação</div>
+    <div class="info-text" style="font-size:10px;color:var(--muted);">Figueiredo, A. P. & Vale, D. S. (2025). Bike Friendly Index Portugal. BEAM, FA-ULisboa.</div>
+  </div>
+  <div class="cc-badge">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M10 9.5C10.5 8.5 11.2 8 12 8c1.7 0 3 1.3 3 4s-1.3 4-3 4c-.8 0-1.5-.5-2-1.5"/></svg>
+    CC BY-NC-SA 4.0
+  </div>
+</div>
+
+<!-- FLOATING LEFT OVERLAY -->
+<div id="float-left">
+  <div id="float-gauge">
+    <div class="gauge-container">
+      <svg id="gauge-svg" width="209" height="209" viewBox="0 0 130 130"></svg>
+      <div class="gauge-label-center">
+        <div class="gauge-score" id="gauge-score">—</div>
+        <div class="gauge-sub">/ 10</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="float-summary">
+    <div class="city-name-big" id="card-city-name">Portugal</div>
+    <div class="float-stats">
+      <div class="float-stat"><span class="stat-label">Ranking</span><span class="stat-value" id="s-rank">—</span></div>
+      <div class="float-stat"><span class="stat-label">População</span><span class="stat-value" id="s-pop">—</span></div>
+      <div class="float-stat"><span class="stat-label">Área</span><span class="stat-value" id="s-area">—</span></div>
+      <div class="float-stat"><span class="stat-label">Ciclovias</span><span class="stat-value accent" id="s-cic">—</span></div>
+      <div class="float-stat"><span class="stat-label">Bike Share</span><span class="stat-value" id="s-bs">—</span></div>
+      <div class="float-stat"><span class="stat-label" id="s-inv-label">Investimento</span><span class="stat-value" id="s-inv">—</span></div>
+      <div class="float-stat"><span class="stat-label">Utilização</span><span class="stat-value" id="s-util">—</span></div>
+      <div class="float-stat"><span class="stat-label">Utilização Mulheres</span><span class="stat-value" id="s-mulh">—</span></div>
+    </div>
+  </div>
+
+  <button id="details-btn" onclick="toggleRadarModal()">BFI Details</button>
+</div>
+
+<!-- RADAR MODAL -->
+<div id="radar-modal">
+  <div class="bcard-title">Dimensões BFI</div>
+  <div class="chart-toggle">
+    <div class="chart-toggle-btns">
+      <button class="ct-btn active" id="btn-radar" onclick="switchChart('radar')">Radar</button>
+      <button class="ct-btn" id="btn-bar" onclick="switchChart('bar')">Barras</button>
+    </div>
+    <div class="radar-legend">
+      <div class="legend-item">
+        <div class="legend-line" style="background:#c05000;"></div>
+        <span id="legend-city-label">Concelho</span>
+      </div>
+      <div class="legend-item" id="legend-pt-item">
+        <div class="legend-line" style="background:rgba(255,140,0,0.85);"></div>
+        <span>Portugal</span>
+      </div>
+    </div>
+  </div>
+  <canvas id="radar-canvas"></canvas>
+  <canvas id="bar-canvas" style="display:none;"></canvas>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════
+// CONFIG & STATE
+// ════════════════════════════════════════════════════════
+const INDICATORS = [
+  { key: 'bfi_2025',    label: 'BFI Total',          color: '#4af0a0' },
+  { key: 'c1_declive',  label: 'C1 · Declive',       color: '#2dd4f7' },
+  { key: 'c2_ambcon',   label: 'C2 · Amb. Construído', color: '#a78bfa' },
+  { key: 'c3_infraest', label: 'C3 · Infraestruturas', color: '#f97316' },
+  { key: 'c4_compolit', label: 'C4 · Comp. Político', color: '#f59e0b' },
+  { key: 'c5_utiliza',  label: 'C5 · Utilização',    color: '#ec4899' },
+];
+
+const DIM_LABELS = ['Declive','Amb. Construído','Infraestruturas','Comp. Político','Utilização'];
+const DIM_KEYS   = ['c1_declive','c2_ambcon','c3_infraest','c4_compolit','c5_utiliza'];
+
+let state = {
+  datasets: [],
+  geojsonByYear: {},
+  activeYear: null,
+  compareMode: false,
+  compareYearA: null,
+  compareYearB: null,
+  selectedIndicator: 'bfi_2025',
+  selectedFeature: null,
+  nationalAvg: {},
+  nationalTotal: {},
+  allFeatures: [],
+  theme: 'light',
+  elevationScale: 0.25,
+  colorScheme: 'gnbu',
+  invertColorScheme: false,
+};
+
+let deckInstance = null;
+let radarChart = null;
+let barChart = null;
+
+// ════════════════════════════════════════════════════════
+// BOOT
+// ════════════════════════════════════════════════════════
+async function boot() {
+  // Load config
+  let cfg;
+  try {
+    const r = await fetch('config.json?v=' + Date.now());
+    cfg = await r.json();
+  } catch(e) {
+    cfg = { datasets: [{ year: 2025, file: 'concelhos_bfi_2025.geojson' }] };
+  }
+  state.datasets = cfg.datasets;
+
+  // Load each geojson that exists
+  for (const ds of cfg.datasets) {
+    try {
+      const r = await fetch(ds.file);
+      if (!r.ok) continue;
+      const gj = await r.json();
+      state.geojsonByYear[ds.year] = gj;
+      if (!state.activeYear) state.activeYear = ds.year;
+    } catch(e) { /* file not present yet */ }
+  }
+
+  if (!state.activeYear && cfg.datasets.length) {
+    state.activeYear = cfg.datasets[0].year;
+  }
+
+  buildSidebar();
+  initMap();
+}
+
+// ════════════════════════════════════════════════════════
+// NATIONAL AVG
+// ════════════════════════════════════════════════════════
+function computeNationalAvg() {
+  const refYear = (state.compareMode && state.compareYearA) ? state.compareYearA : state.activeYear;
+  const gj = state.geojsonByYear[refYear];
+  if (!gj) return;
+  const feats = gj.features;
+  state.allFeatures = feats;
+
+  // Totais (soma) para variáveis absolutas
+  const sumKeys = ['PopResidente_2021','area_km2','ExtensaoCiclovias_conc'];
+  sumKeys.forEach(k => {
+    const vals = feats.map(f => parseFloat(f.properties[k])).filter(v => !isNaN(v));
+    state.nationalTotal[k] = vals.length ? vals.reduce((a,b)=>a+b,0) : 0;
+  });
+
+  // Médias para scores BFI, investimento e taxas de utilização
+  const avgKeys = ['bfi_2025','c1_declive','c2_ambcon','c3_infraest','c4_compolit','c5_utiliza',
+                   'Total_Valor_Euros','UtilizacaoBicicleta','UtilizacaoMulheres'];
+  avgKeys.forEach(k => {
+    const vals = feats.map(f => parseFloat(f.properties[k])).filter(v => !isNaN(v));
+    state.nationalAvg[k] = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
+  });
+
+  state.nationalAvg['BikeSharing'] = feats.filter(f=>f.properties['BikeSharing']==1).length / feats.length;
+}
+
+// ════════════════════════════════════════════════════════
+// MAP INIT
+// ════════════════════════════════════════════════════════
+function initMap() {
+  const mapgl = new maplibregl.Map({
+    container: 'map',
+    style: {
+      version: 8,
+      sources: {
+        'carto-dark': {
+          type: 'raster',
+          tiles: ['https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'],
+          tileSize: 256,
+          attribution: '© CartoDB © OpenStreetMap'
+        },
+        'carto-light': {
+          type: 'raster',
+          tiles: ['https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'],
+          tileSize: 256,
+          attribution: '© CartoDB © OpenStreetMap'
+        }
+      },
+      layers: [
+        { id: 'base-dark',  type: 'raster', source: 'carto-dark',  layout: { visibility: 'none'    } },
+        { id: 'base-light', type: 'raster', source: 'carto-light', layout: { visibility: 'visible' } }
+      ]
+    },
+    center: [-8, 39.6],
+    zoom: 6.2,
+    pitch: 0,
+    minpitch: 0,
+    maxpitch: 75,
+    bearing: 0,
+    maxBounds: [[-16, 36], [-0.5, 43.5]],
+    minZoom: 4,
+    maxZoom: 10.0,
+    antialias: false,
+  });
+
+  window._mapgl = mapgl;
+
+  mapgl.on('load', () => {
+    // Canvas DeckGL transparente – pointer-events:none para que MapLibre controle a navegação
+    const deckCanvas = document.createElement('canvas');
+    deckCanvas.id = 'deck-canvas';
+    deckCanvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;';
+    document.getElementById('map').appendChild(deckCanvas);
+
+    deckInstance = new deck.Deck({
+      canvas: 'deck-canvas',
+      width: '100%',
+      height: '100%',
+      initialViewState: {
+        longitude: -8,
+        latitude: 39.6,
+        zoom: 6.2,
+        pitch: 0,
+        bearing: 0,
+      },
+      controller: false, // MapLibre é o único controlador
+      layers: [],
+    });
+
+    try {
+      const ambientLight = new deck.AmbientLight({ color: [255,255,255], intensity: 2 });
+      const dirLight = new deck.DirectionalLight({
+        color: [255, 255, 255],
+        direction: [0, 4, -5],
+        intensity: 0.2,
+        _shadow: false,
+      });
+      const lightingEffect = new deck.LightingEffect({ ambientLight, dirLight });
+      deckInstance.setProps({ effects: [lightingEffect] });
+    } catch(e) {}
+
+    // MapLibre → DeckGL: sync a cada frame (cobre flyTo, pan, zoom, rotate)
+    function syncDeck() {
+      const c = mapgl.getCenter();
+      deckInstance.setProps({
+        viewState: {
+          longitude: c.lng,
+          latitude:  c.lat,
+          zoom:      mapgl.getZoom(),
+          bearing:   mapgl.getBearing(),
+          pitch:     mapgl.getPitch(),
+          transitionDuration: 0,
+        }
+      });
+    }
+    mapgl.on('move',   syncDeck);
+    mapgl.on('resize', syncDeck);
+
+    // Tooltip: picking manual via canvas do MapLibre
+    const mc = mapgl.getCanvas();
+    mc.addEventListener('mousemove', e => {
+      const rect = mc.getBoundingClientRect();
+      const info = deckInstance.pickObject({ x: e.clientX - rect.left, y: e.clientY - rect.top, radius: 1 });
+      const tt = document.getElementById('map-tooltip');
+      if (info?.object) {
+        const p = info.object.properties;
+        const v = getIndicatorValue(p, state.selectedIndicator);
+        document.getElementById('tt-name').textContent = p.municipio;
+        document.getElementById('tt-val').textContent =
+          (INDICATORS.find(i => i.key === state.selectedIndicator)?.label || '') + ': ' + v.toFixed(3);
+        tt.style.display = 'block';
+        tt.style.left = (e.clientX - rect.left + 12) + 'px';
+        tt.style.top  = (e.clientY - rect.top  + 12) + 'px';
+      } else {
+        tt.style.display = 'none';
+      }
+    });
+    mc.addEventListener('mouseleave', () => {
+      document.getElementById('map-tooltip').style.display = 'none';
+    });
+
+    // Click: selecionar feature via picking
+    mc.addEventListener('click', e => {
+      const rect = mc.getBoundingClientRect();
+      const info = deckInstance.pickObject({ x: e.clientX - rect.left, y: e.clientY - rect.top, radius: 1 });
+      if (info?.object) selectFeature(info.object);
+    });
+
+    computeNationalAvg();
+    updateDeckLayer();
+    showNationalPanel();
+  });
+}
+
+// ════════════════════════════════════════════════════════
+// DECK LAYER
+// ════════════════════════════════════════════════════════
+function getIndicatorValue(props, key) {
+  const v = parseFloat(props[key]);
+  return isNaN(v) ? 0 : v;
+}
+
+// ════════════════════════════════════════════════════════
+// COLOR SCHEMES
+// ════════════════════════════════════════════════════════
+// const COLOR_SCHEMES = {
+//   gnbu:      { label: 'GnBu',           stops: [[247,252,240],[224,243,219],[204,235,197],[168,221,181],[123,204,196],[78,179,211],[43,140,190],[8,104,172],[8,64,129]] },
+//   grayscale: { label: 'P & B',          stops: [[245,245,245],[210,210,210],[170,170,170],[130,130,130],[90,90,90],[50,50,50],[15,15,15]] },
+//   viridis:   { label: 'Viridis',        stops: [[68,1,84],[72,40,120],[62,83,160],[49,104,142],[38,130,142],[31,158,137],[53,183,121],[109,205,89],[180,222,44],[253,231,37]] },
+//   ylorrd:    { label: 'Alto Contraste', stops: [[255,255,204],[255,237,160],[254,217,118],[254,178,76],[253,141,60],[252,78,42],[227,26,28],[177,0,38]] },
+//   inferno:   { label: 'Inferno',        stops: [[0,0,4],[31,12,72],[85,15,109],[136,34,106],[186,54,85],[227,89,51],[249,140,10],[252,202,38],[252,255,164]] },
+//   tealrd:    { label: 'Teal–Vermelho',  stops: [[88,172,163],[145,207,196],[200,233,225],[245,248,228],[253,228,182],[248,190,112],[233,140,60],[208,78,32],[165,22,22],[100,0,12]] },
+// };
+
+const COLOR_SCHEMES = {
+  gnbu: {label: 'GnBu', stops: [[247,252,240],[224,243,219],[204,235,197],[168,221,181],[123,204,196],[78,179,211],[43,140,190],[8,104,172],[8,64,129]]},
+};
+
+function interpolateScheme(key, t) {
+  const stops = (COLOR_SCHEMES[key] || COLOR_SCHEMES.gnbu).stops;
+  const tt = state.invertColorScheme ? 1 - t : t;
+  const s = Math.max(0, Math.min(1, tt)) * (stops.length - 1);
+  const i = Math.min(Math.floor(s), stops.length - 2);
+  const f = s - i;
+  const a = stops[i], b = stops[i + 1];
+  return [
+    Math.round(a[0] + f * (b[0] - a[0])),
+    Math.round(a[1] + f * (b[1] - a[1])),
+    Math.round(a[2] + f * (b[2] - a[2])),
+    255,
+  ];
+}
+
+function getColor(value, minV, maxV, compare=false) {
+  if (compare) {
+    if (value < 0) return [249, 115, 22, 255];
+    return [45, 212, 247, 255];
+  }
+  const t = maxV > minV ? (value - minV) / (maxV - minV) : 0;
+  return interpolateScheme(state.colorScheme, t);
+}
+
+function updateDeckLayer() {
+  if (!deckInstance) { setTimeout(updateDeckLayer, 200); return; }
+
+  const activeGjYear = (state.compareMode && state.compareYearA) ? state.compareYearA : state.activeYear;
+  const gj = state.geojsonByYear[activeGjYear];
+  if (!gj) return;
+
+  const key = state.selectedIndicator;
+  const values = gj.features.map(f => getIndicatorValue(f.properties, key));
+  const minV = Math.min(...values);
+  const maxV = Math.max(...values);
+  const maxElev = 80000 * state.elevationScale;
+
+  let compareGj = null;
+  if (state.compareMode && state.compareYearB) {
+    compareGj = state.geojsonByYear[state.compareYearB];
+  }
+
+  const borderColor = state.theme === 'light'
+    ? [30, 70, 50, 230]
+    : [180, 220, 200, 150];
+
+  const selectedName = state.selectedFeature?.properties?.municipio ?? null;
+
+  const layer = new deck.GeoJsonLayer({
+    id: 'concelhos',
+    data: gj,
+    extruded: true,
+    wireframe: false,
+    pickable: true, // necessário para pickObject() manual
+
+    material: {
+      ambient: 0.4,
+      diffuse: 0.7,
+      shininess: 20,
+      specularColor: [0, 0, 30],
+    },
+
+    getElevation: 0,
+
+    getFillColor: f => {
+      if (selectedName && f.properties.municipio === selectedName) return [249, 115, 22, 255];
+
+      if (state.compareMode && compareGj) {
+        const other = compareGj.features.find(o => o.properties.municipio === f.properties.municipio);
+        if (other) {
+          const diff = getIndicatorValue(f.properties, key) - getIndicatorValue(other.properties, key);
+          return getColor(diff, -maxV, maxV, true);
+        }
+      }
+      return getColor(getIndicatorValue(f.properties, key), minV, maxV);
+    },
+
+    getLineColor: f => {
+      const isSelected = state.selectedFeature &&
+        f.properties.municipio === state.selectedFeature.properties.municipio;
+      if (isSelected) return [0, 0, 0, 255];
+      return borderColor;
+
+    },
+    getLineWidth: 0.5,
+    lineWidthUnits: 'pixels',
+    lineWidthMinPixels: 0.5,
+
+    updateTriggers: {
+      getFillColor: [state.colorScheme, state.invertColorScheme, state.selectedIndicator, state.compareMode, state.activeYear, minV, maxV, selectedName],
+      getElevation: [state.selectedIndicator, state.compareMode, state.activeYear, state.elevationScale, maxV],
+      getLineColor: [state.theme, selectedName],
+    },
+  });
+
+  deckInstance.setProps({ layers: [layer] });
+
+}
+
+// ════════════════════════════════════════════════════════
+// FEATURE SELECT
+// ════════════════════════════════════════════════════════
+function selectFeature(feature) {
+  state.selectedFeature = feature;
+  const p = feature.properties;
+
+  // Fly to
+  const coords = feature.geometry.coordinates.flat(Infinity);
+  let lngs = [], lats = [];
+  for (let i=0; i<coords.length; i+=2) { lngs.push(coords[i]); lats.push(coords[i+1]); }
+  const cLng = (Math.min(...lngs)+Math.max(...lngs))/2;
+  const cLat = (Math.min(...lats)+Math.max(...lats))/2;
+
+  // MapLibre anima; DeckGL segue via mapgl.on('move', syncDeck)
+  if (window._mapgl) {
+    window._mapgl.flyTo({ center: [cLng, cLat], zoom: 7.8, pitch: 45, bearing: -20, duration: 1200 });
+  }
+
+  updateDeckLayer();
+  showPanel(p);
+}
+
+function showNationalPanel() {
+  const avg = state.nationalAvg;
+  const tot = state.nationalTotal;
+  const lcl = document.getElementById('legend-city-label'); if(lcl) lcl.textContent = 'Portugal';
+  const ptLegend = document.getElementById('legend-pt-item'); if(ptLegend) ptLegend.style.display = 'none';
+  fillCard1({
+    municipio: 'Portugal',
+    PopResidente_2021: 10343066,
+    area_km2: tot['area_km2'],
+    ExtensaoCiclovias_conc: tot['ExtensaoCiclovias_conc'],
+    BikeSharing: avg['BikeSharing'],
+    Total_Valor_Euros: avg['Total_Valor_Euros'],
+    UtilizacaoBicicleta: avg['UtilizacaoBicicleta'],
+    UtilizacaoMulheres: avg['UtilizacaoMulheres'],
+  }, true);
+  fillGauge(avg['bfi_2025'], null);
+  fillRadar(DIM_KEYS.map(k => avg[k]), null);
+  showBottomPanels();
+}
+
+function showPanel(p) {
+  fillCard1(p, false);
+  const lcl = document.getElementById('legend-city-label'); if(lcl) lcl.textContent = p.municipio;
+  const ptLegend = document.getElementById('legend-pt-item'); if(ptLegend) ptLegend.style.display = '';
+  fillGauge(parseFloat(p.bfi_2025), parseInt(p.bfi_Ranking));
+  fillRadar(DIM_KEYS.map(k => parseFloat(p[k])), DIM_KEYS.map(k => state.nationalAvg[k]));
+  showBottomPanels();
+}
+
+// ── Card 1
+function fillCard1(p, isNational) {
+  document.getElementById('card-city-name').textContent = p.municipio;
+  document.getElementById('s-pop').textContent  = formatNum(p.PopResidente_2021) + ' hab.';
+  document.getElementById('s-area').textContent = (+p.area_km2).toFixed(1) + ' km²';
+  document.getElementById('s-cic').textContent  = formatNum(p.ExtensaoCiclovias_conc) + ' m';
+  document.getElementById('s-inv').textContent  = '€ ' + formatNum(Math.round(p.Total_Valor_Euros));
+  document.getElementById('s-util').textContent = (p.UtilizacaoBicicleta*100).toFixed(1) + '%';
+  document.getElementById('s-mulh').textContent = (p.UtilizacaoMulheres*100).toFixed(1) + '%';
+
+  const bs = document.getElementById('s-bs');
+  if (isNational) {
+    bs.textContent = (p.BikeSharing * 100).toFixed(0) + '% concelhos';
+    bs.className = 'stat-value';
+  } else {
+    bs.innerHTML = p.BikeSharing == 1
+      ? '<span class="bikeshare-pill yes">Sim</span>'
+      : '<span class="bikeshare-pill no">Não</span>';
+  }
+  const invLabel = document.getElementById('s-inv-label');
+  if (invLabel) invLabel.textContent = isNational ? 'Investimento médio' : 'Investimento';
+}
+
+// ── Gauge
+function fillGauge(score, ranking) {
+  const svg = document.getElementById('gauge-svg');
+  const avg = state.nationalAvg['bfi_2025'] || 0;
+  const cx=65, cy=65, r1=50, r2=38;
+  const scoreAngle = (score/10) * 360;
+  const avgAngle   = (avg/10)   * 360;
+
+  function arc(radius, angle, color, sw) {
+    const a = (angle-90) * Math.PI/180;
+    const x = cx + radius * Math.cos(a);
+    const y = cy + radius * Math.sin(a);
+    const large = angle > 180 ? 1 : 0;
+    // background ring
+    const bg = `<circle cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="${sw}"/>`;
+    const fg = angle >= 360
+      ? `<circle cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke="${color}" stroke-width="${sw}" stroke-dasharray="${2*Math.PI*radius}" stroke-dashoffset="0" stroke-linecap="round"/>`
+      : `<path d="M ${cx} ${cy-radius} A ${radius} ${radius} 0 ${large} 1 ${x} ${y}" fill="none" stroke="${color}" stroke-width="${sw}" stroke-linecap="round"/>`;
+    return bg + fg;
+  }
+
+  svg.innerHTML =
+    arc(r1, scoreAngle, '#c05000', 11) +
+    (ranking !== null ? arc(r2, avgAngle, 'rgba(255,140,0,0.75)', 4) : '');
+
+  document.getElementById('gauge-score').textContent = score ? score.toFixed(1) : '—';
+  const sRank = document.getElementById('s-rank');
+  if (sRank) sRank.textContent = ranking ? `${ranking}º lugar` : '—';
+}
+
+// ── Radar / Bar
+function fillRadar(cityVals, avgVals) {
+  // draw radar on canvas
+  const isLight = state.theme === 'light';
+  const gridStroke = isLight ? 'rgba(0,0,0,0.12)'  : 'rgba(255,255,255,0.2)';
+  const labelColor = isLight ? '#4a7060'            : '#7aaa8e';
+  const valueColor = isLight ? '#0d2018'            : '#daf0e5';
+  const n = 5;
+  const maxVal = 10;
+
+  // ── Radar ──────────────────────────────────────────────
+  const canvas = document.getElementById('radar-canvas');
+  const W = canvas.offsetWidth, H = canvas.offsetHeight;
+  if (W > 0 && H > 0) {
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, W, H);
+
+    const labelPad = 28;
+    const cx = W/2, cy = H/2, maxR = Math.min(cx, cy) - labelPad;
+    const angles = Array.from({length: n}, (_, i) => (i/n)*2*Math.PI - Math.PI/2);
+
+    [0.25, 0.5, 0.75, 1].forEach(t => {
+      ctx.beginPath();
+      angles.forEach((a, i) => {
+        const x = cx + Math.cos(a)*maxR*t, y = cy + Math.sin(a)*maxR*t;
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      });
+      ctx.closePath();
+      ctx.strokeStyle = gridStroke; ctx.lineWidth = 1; ctx.stroke();
+    });
+
+    angles.forEach((a, i) => {
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + Math.cos(a)*maxR, cy + Math.sin(a)*maxR);
+      ctx.strokeStyle = gridStroke; ctx.lineWidth = 1; ctx.stroke();
+      const lx = cx + Math.cos(a)*(maxR+14), ly = cy + Math.sin(a)*(maxR+14);
+      ctx.fillStyle = labelColor; ctx.font = '10px Roboto Condensed';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(DIM_LABELS[i], lx, ly);
+    });
+
+    function polygon(vals, color, fill, lineW) {
+      ctx.beginPath();
+      angles.forEach((a, i) => {
+        const t = Math.min((vals[i]||0)/maxVal, 1);
+        const x = cx + Math.cos(a)*maxR*t, y = cy + Math.sin(a)*maxR*t;
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      });
+      ctx.closePath();
+      ctx.strokeStyle = color; ctx.lineWidth = lineW; ctx.stroke();
+      if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+    }
+
+    if (avgVals) polygon(avgVals, 'rgba(255,140,0,0.85)', 'rgba(255,140,0,0.08)', 2);
+    polygon(cityVals, '#c05000', 'rgba(192,80,0,0.15)', 3);
+  }
+
+  // ── Bar chart ──────────────────────────────────────────
+  const bCanvas = document.getElementById('bar-canvas');
+  const bW = bCanvas.offsetWidth, bH = bCanvas.offsetHeight;
+  if (bW > 0 && bH > 0) {
+    const bCtx = bCanvas.getContext('2d');
+    const bDpr = window.devicePixelRatio || 1;
+    bCanvas.width = bW * bDpr; bCanvas.height = bH * bDpr;
+    bCanvas.style.width = bW + 'px'; bCanvas.style.height = bH + 'px';
+    bCtx.scale(bDpr, bDpr);
+    bCtx.clearRect(0, 0, bW, bH);
+
+    const CITY_COL = '#c05000';
+    const PTGL_COL = 'rgba(255,140,0,0.85)';
+    const labelW   = 80;
+    const valW     = 30;
+    const barAreaW = bW - labelW - valW;
+    const rowH     = bH / n;
+    const cityH    = Math.max(6, Math.round(rowH * 0.28));
+    const ptglH    = Math.max(4, Math.round(rowH * 0.16));
+    const rowGap   = 3;
+
+    cityVals.forEach((v, i) => {
+      const rowMid = Math.round(i * rowH + rowH / 2);
+
+      bCtx.fillStyle = labelColor;
+      bCtx.font = '10px Roboto Condensed';
+      bCtx.textAlign = 'right'; bCtx.textBaseline = 'middle';
+      bCtx.fillText(DIM_LABELS[i], labelW - 6, rowMid);
+
+      const cityBarW = Math.round(Math.min((v||0)/maxVal, 1) * barAreaW);
+      bCtx.fillStyle = CITY_COL;
+      bCtx.fillRect(labelW, rowMid - cityH - rowGap, cityBarW, cityH);
+
+      bCtx.fillStyle = valueColor;
+      bCtx.font = 'bold 10px Roboto Condensed';
+      bCtx.textAlign = 'left';
+      bCtx.fillText((v||0).toFixed(1), labelW + cityBarW + 4, rowMid - cityH/2 - rowGap);
+
+      if (avgVals) {
+        const ptglBarW = Math.round(Math.min((avgVals[i]||0)/maxVal, 1) * barAreaW);
+        bCtx.fillStyle = PTGL_COL;
+        bCtx.globalAlpha = 0.80;
+        bCtx.fillRect(labelW, rowMid + rowGap, ptglBarW, ptglH);
+        bCtx.globalAlpha = 1;
+      }
+    });
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// SIDEBAR BUILDER
+// ════════════════════════════════════════════════════════
+function buildSidebar() {
+  // Indicators
+  const indList = document.getElementById('indicator-list');
+  INDICATORS.forEach(ind => {
+    const div = document.createElement('div');
+    div.className = 'indicator-option' + (ind.key === state.selectedIndicator ? ' selected' : '');
+    div.innerHTML = `<div class="ind-dot" style="background:${ind.color}"></div>${ind.label}`;
+    div.onclick = () => {
+      document.querySelectorAll('.indicator-option').forEach(el => el.classList.remove('selected'));
+      div.classList.add('selected');
+      state.selectedIndicator = ind.key;
+      updateDeckLayer();
+      if(state.selectedFeature) showPanel(state.selectedFeature.properties);
+      else showNationalPanel();
+    };
+    indList.appendChild(div);
+  });
+
+  // Years
+  buildYearList();
+
+  // Cities
+  buildCityList('');
+}
+
+function buildColorSchemeList() {
+  const list = document.getElementById('colorscheme-list');
+  if (!list) return;
+  list.innerHTML = '';
+  const invertRow = document.createElement('div');
+  invertRow.className = 'toggle-row';
+  invertRow.innerHTML = `
+    <span style="font-size:11px;color:var(--muted);">Inverter rampa GnBu</span>
+    <div class="toggle-switch${state.invertColorScheme ? ' on' : ''}" id="invert-toggle" onclick="toggleColorInvert()"></div>`;
+  list.appendChild(invertRow);
+}
+
+function toggleColorInvert() {
+  state.invertColorScheme = !state.invertColorScheme;
+  const sw = document.getElementById('invert-toggle');
+  if (sw) sw.className = 'toggle-switch' + (state.invertColorScheme ? ' on' : '');
+  updateDeckLayer();
+}
+
+function setColorScheme(key) {
+  state.colorScheme = key;
+  document.querySelectorAll('.scheme-option').forEach(el => el.classList.remove('selected'));
+  document.querySelectorAll('.scheme-option').forEach(el => {
+    if (el.querySelector('.scheme-label')?.textContent === COLOR_SCHEMES[key].label)
+      el.classList.add('selected');
+  });
+  updateDeckLayer();
+}
+
+function setElevationScale(val) {
+  state.elevationScale = val;
+  document.getElementById('elevation-label').textContent = Math.round(val * 100) + '%';
+  updateDeckLayer();
+}
+
+function buildYearList() {
+  const list = document.getElementById('year-list');
+  list.innerHTML = '';
+  const avail = Object.keys(state.geojsonByYear).map(Number);
+
+  state.datasets.forEach(ds => {
+    const isAvail = avail.includes(ds.year);
+    const div = document.createElement('div');
+    div.style.cursor = isAvail ? 'pointer' : 'default';
+    div.style.opacity = isAvail ? '1' : '0.4';
+
+    if (state.compareMode && isAvail) {
+      const isA = ds.year === state.compareYearA;
+      const isB = ds.year === state.compareYearB;
+      div.className = 'year-option';
+      div.innerHTML = `
+        <span>${ds.year}</span>
+        <div class="year-ab-btns">
+          <button class="year-ab-btn${isA ? ' sel-a' : ''}">A</button>
+          <button class="year-ab-btn${isB ? ' sel-b' : ''}">B</button>
+        </div>`;
+      div.querySelectorAll('.year-ab-btn')[0].onclick = e => { e.stopPropagation(); setCompareYear('A', ds.year); };
+      div.querySelectorAll('.year-ab-btn')[1].onclick = e => { e.stopPropagation(); setCompareYear('B', ds.year); };
+    } else {
+      const isActive = ds.year === state.activeYear;
+      div.className = 'year-option' + (isActive ? ' selected' : '');
+      div.innerHTML = `<span>${ds.year}</span><span class="year-badge ${isAvail?'avail':''}">${isAvail?'Disponível':'Em breve'}</span>`;
+      if (isAvail) {
+        div.onclick = () => {
+          state.activeYear = ds.year;
+          computeNationalAvg();
+          updateDeckLayer();
+          buildYearList();
+          if(state.selectedFeature) {
+            const gj = state.geojsonByYear[state.activeYear];
+            const name = state.selectedFeature.properties.municipio;
+            const found = gj?.features.find(f => f.properties.municipio === name);
+            if(found) showPanel(found.properties);
+            else showNationalPanel();
+          } else showNationalPanel();
+        };
+      }
+    }
+    list.appendChild(div);
+  });
+
+  // Compare toggle (only if 2+ years loaded)
+  const cs = document.getElementById('compare-section');
+  if (avail.length >= 2) {
+    cs.style.display = 'block';
+    document.getElementById('compare-toggle').className = 'toggle-switch' + (state.compareMode?' on':'');
+  } else {
+    cs.style.display = 'none';
+  }
+}
+
+function setCompareYear(slot, year) {
+  if (slot === 'A') {
+    state.compareYearA = year;
+    computeNationalAvg();
+  } else {
+    state.compareYearB = year;
+  }
+  const badge = document.getElementById('compare-badge');
+  if (badge) badge.textContent = `Modo comparação: ${state.compareYearA} vs ${state.compareYearB}`;
+  buildYearList();
+  updateDeckLayer();
+}
+
+function buildCityList(filter) {
+  const gj = state.geojsonByYear[state.activeYear];
+  if (!gj) return;
+  const list = document.getElementById('city-list');
+  list.innerHTML = '';
+  const feats = gj.features
+    .filter(f => f.properties.municipio.toLowerCase().includes(filter.toLowerCase()))
+    .sort((a,b) => parseInt(a.properties.bfi_Ranking) - parseInt(b.properties.bfi_Ranking));
+
+  feats.forEach(f => {
+    const p = f.properties;
+    const div = document.createElement('div');
+    div.className = 'city-item';
+    div.innerHTML = `<span>${p.municipio}</span><span class="city-rank">#${p.bfi_Ranking}</span>`;
+    div.onclick = () => {
+      selectFeature(f);
+      closeAllPanels();
+    };
+    list.appendChild(div);
+  });
+}
+
+function filterCities(val) { buildCityList(val); }
+
+// ════════════════════════════════════════════════════════
+// PANEL SYSTEM (hover + sticky)
+// ════════════════════════════════════════════════════════
+const PANELS = ['city','indicator','year','info'];
+
+let _hoverTimer    = null;
+let _currentPanel  = null; // painel aberto por hover
+let _stickyPanel   = null; // painel fixo (clique em "info")
+
+function _positionPanel(name) {
+  const panel = document.getElementById(`panel-${name}`);
+  const btn   = document.getElementById(`btn-${name}`);
+  if (!panel || !btn) return;
+  panel.classList.add('open');
+  btn.classList.add('active');
+  const btnRect  = btn.getBoundingClientRect();
+  const panelH   = panel.offsetHeight || 300;
+  const btnMid   = btnRect.top + btnRect.height / 2;
+  const idealTop = btnMid - panelH / 2;
+  panel.style.top = Math.max(8, Math.min(idealTop, window.innerHeight - panelH - 8)) + 'px';
+}
+
+function _closePanel(name) {
+  document.getElementById(`panel-${name}`)?.classList.remove('open');
+  document.getElementById(`btn-${name}`)?.classList.remove('active');
+}
+
+// Abrir painel por hover (todos exceto info)
+function openHoverPanel(name) {
+  if (_hoverTimer) { clearTimeout(_hoverTimer); _hoverTimer = null; }
+  // Fechar sticky se for diferente
+  if (_stickyPanel && _stickyPanel !== name) {
+    _closePanel(_stickyPanel);
+    _stickyPanel = null;
+  }
+  // Fechar painel hover anterior
+  if (_currentPanel && _currentPanel !== name) _closePanel(_currentPanel);
+  _currentPanel = name;
+  _positionPanel(name);
+}
+
+// Iniciar fecho com delay (para o utilizador passar para o painel sem fechar)
+function startCloseHoverPanel(name) {
+  if (name === _stickyPanel) return; // nunca fechar o sticky por hover
+  _hoverTimer = setTimeout(() => {
+    _hoverTimer = null;
+    if (_currentPanel === name) {
+      _closePanel(name);
+      _currentPanel = null;
+    }
+  }, 280);
+}
+
+// Cancelar fecho (quando o rato entra no painel)
+function cancelCloseHoverPanel() {
+  if (_hoverTimer) { clearTimeout(_hoverTimer); _hoverTimer = null; }
+}
+
+// Painel sticky (clique em "Sobre o Projeto")
+function toggleStickyPanel(name) {
+  if (_stickyPanel === name) {
+    _closePanel(name);
+    _stickyPanel = null;
+    _currentPanel = null;
+  } else {
+    // Fechar hover panel se existir
+    if (_currentPanel && _currentPanel !== name) { _closePanel(_currentPanel); _currentPanel = null; }
+    _stickyPanel = name;
+    _positionPanel(name);
+  }
+}
+
+function closeAllPanels() {
+  if (_hoverTimer) { clearTimeout(_hoverTimer); _hoverTimer = null; }
+  _currentPanel = null;
+  _stickyPanel  = null;
+  PANELS.forEach(n => _closePanel(n));
+}
+
+// Clicar fora fecha tudo (excepto sticky fecha só ao clicar fora)
+document.addEventListener('click', e => {
+  if (!e.target.closest('.panel') && !e.target.closest('.nav-btn')) {
+    closeAllPanels();
+  }
+});
+
+// ════════════════════════════════════════════════════════
+// HOME
+// ════════════════════════════════════════════════════════
+function goHome() {
+  state.selectedFeature = null;
+  if (window._mapgl) {
+    window._mapgl.flyTo({ center: [-8, 39.6], zoom: 6.2, pitch: 0, bearing: 0, duration: 1200 });
+  }
+  updateDeckLayer();
+  showNationalPanel();
+}
+
+// ════════════════════════════════════════════════════════
+// BOTTOM PANELS ANIMATION
+// ════════════════════════════════════════════════════════
+function showBottomPanels() {
+  document.getElementById('float-left').style.display = 'flex';
+}
+
+function toggleRadarModal() {
+  const modal = document.getElementById('radar-modal');
+  const btn   = document.getElementById('details-btn');
+  if (modal.style.display === 'none' || modal.style.display === '') {
+    const rect = document.getElementById('float-left').getBoundingClientRect();
+    modal.style.left = (rect.right + 12) + 'px';
+    modal.style.top  = rect.top + 'px';
+    modal.style.display = 'block';
+    btn.textContent = 'BFI Details ✕';
+    btn.classList.add('open');
+    requestAnimationFrame(() => {
+      if (state.selectedFeature) {
+        const p = state.selectedFeature.properties;
+        fillRadar(DIM_KEYS.map(k => parseFloat(p[k])), DIM_KEYS.map(k => state.nationalAvg[k]));
+      } else {
+        fillRadar(DIM_KEYS.map(k => state.nationalAvg[k]), null);
+      }
+    });
+  } else {
+    modal.style.display = 'none';
+    btn.textContent = 'BFI Details';
+    btn.classList.remove('open');
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// CHART SWITCH
+// ════════════════════════════════════════════════════════
+function switchChart(type) {
+  document.getElementById('radar-canvas').style.display = type==='radar' ? 'block' : 'none';
+  document.getElementById('bar-canvas').style.display   = type==='bar'   ? 'block' : 'none';
+  document.getElementById('btn-radar').className = 'ct-btn' + (type==='radar'?' active':'');
+  document.getElementById('btn-bar').className   = 'ct-btn' + (type==='bar'  ?' active':'');
+
+  // Redraw
+  if (state.selectedFeature) {
+    const p = state.selectedFeature.properties;
+    fillRadar(DIM_KEYS.map(k=>parseFloat(p[k])), DIM_KEYS.map(k=>state.nationalAvg[k]));
+  } else {
+    fillRadar(DIM_KEYS.map(k=>state.nationalAvg[k]), null);
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// COMPARE TOGGLE
+// ════════════════════════════════════════════════════════
+function toggleCompare() {
+  const avail = Object.keys(state.geojsonByYear).map(Number).sort();
+  const badge = document.getElementById('compare-badge');
+
+  if (!state.compareMode) {
+    // Ligar: inicializar Fonte A = ano ativo, Fonte B = outro ano disponível
+    state.compareYearA = state.activeYear;
+    state.compareYearB = avail.find(y => y !== state.activeYear) ?? avail[0];
+    state.compareMode = true;
+    badge.textContent = `Modo comparação: ${state.compareYearA} vs ${state.compareYearB}`;
+    badge.style.display = 'block';
+  } else {
+    // Desligar: reverter para a Fonte A
+    state.activeYear = state.compareYearA;
+    state.compareMode = false;
+    badge.style.display = 'none';
+    computeNationalAvg();
+  }
+
+  document.getElementById('compare-toggle').className = 'toggle-switch' + (state.compareMode?' on':'');
+  buildYearList();
+  updateDeckLayer();
+}
+
+// ════════════════════════════════════════════════════════
+// THEME TOGGLE
+// ════════════════════════════════════════════════════════
+const SUN_ICON  = `<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>`;
+const MOON_ICON = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`;
+
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light-mode');
+  state.theme = isLight ? 'light' : 'dark';
+
+  // Update icon: show moon when light (to switch back), sun when dark
+  const svg = document.querySelector('#btn-theme svg');
+  svg.innerHTML = isLight ? MOON_ICON : SUN_ICON;
+
+  // Swap map tiles
+  if (window._mapgl) {
+    window._mapgl.setLayoutProperty('base-dark',  'visibility', isLight ? 'none'    : 'visible');
+    window._mapgl.setLayoutProperty('base-light', 'visibility', isLight ? 'visible' : 'none');
+  }
+
+  // Redraw geometry and charts
+  updateDeckLayer();
+  if (state.selectedFeature) showPanel(state.selectedFeature.properties);
+  else showNationalPanel();
+}
+
+// ════════════════════════════════════════════════════════
+// UTILS
+// ════════════════════════════════════════════════════════
+function formatNum(n) {
+  const v = parseFloat(n);
+  if (isNaN(v)) return '—';
+  return Math.round(v).toLocaleString('pt-PT');
+}
+
+// ════════════════════════════════════════════════════════
+// START
+// ════════════════════════════════════════════════════════
+boot();
+</script>
+</body>
+</html>
