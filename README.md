@@ -25,12 +25,12 @@ O BFI avalia a ciclabilidade dos concelhos de Portugal com base em 5 dimensões:
 
 ## Autoria
 
-A. P. Figueiredo e D. S. Vale  
+A. P. Figueiredo, D. S. Vale e A. S. Lopes  
 BEAM · Faculdade de Arquitectura · Universidade de Lisboa
 
 ## Citação
 
-Figueiredo, A. P. & Vale, D. S. (2025). *Bike Friendly Index Portugal*. BEAM, FA-ULisboa.
+Figueiredo, A. P., Vale, D. S. & Lopes, A. S. (2025). *Bike Friendly Index Portugal*. BEAM, FA-ULisboa.
 
 ## Licença
 
