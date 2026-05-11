@@ -741,6 +741,11 @@
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20"/><path d="M12 2C6.48 2 2 6.48 2 12"/><circle cx="12" cy="12" r="3"/></svg>
   </button>
 
+  <button class="nav-btn" id="btn-basemap" onclick="toggleBasemap()" title="">
+    <svg viewBox="0 0 24 24"><path d="M3 6l9-3 9 3M3 6v12l9 3 9-3V6M12 3v18"/></svg>
+    <span class="tooltip">Tiles: OSM</span>
+  </button>
+
   <button class="nav-btn" id="btn-theme" onclick="toggleTheme()" title="">
     <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
     <span class="tooltip">Modo Claro / Escuro</span>
@@ -889,6 +894,7 @@ let state = {
   nationalTotal: {},
   allFeatures: [],
   theme: 'light',
+  basemap: 'positron',
   elevationScale: 0.25,
   colorScheme: 'gnbu',
   invertColorScheme: false,
@@ -979,11 +985,18 @@ function initMap() {
           tiles: ['https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'],
           tileSize: 256,
           attribution: '© CartoDB © OpenStreetMap'
+        },
+        'osm': {
+          type: 'raster',
+          tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+          tileSize: 256,
+          attribution: '© OpenStreetMap contributors'
         }
       },
       layers: [
-        { id: 'base-dark',  type: 'raster', source: 'carto-dark',  layout: { visibility: 'none'    } },
-        { id: 'base-light', type: 'raster', source: 'carto-light', layout: { visibility: 'visible' } }
+        { id: 'base-dark',     type: 'raster', source: 'carto-dark',  layout: { visibility: 'none'    } },
+        { id: 'base-positron', type: 'raster', source: 'carto-light', layout: { visibility: 'visible' } },
+        { id: 'base-osm',      type: 'raster', source: 'osm',         layout: { visibility: 'none'    } }
       ]
     },
     center: [-8, 39.6],
@@ -994,7 +1007,7 @@ function initMap() {
     bearing: 0,
     maxBounds: [[-16, 36], [-0.5, 43.5]],
     minZoom: 4,
-    maxZoom: 10.0,
+    maxZoom: 12,
     antialias: false,
   });
 
@@ -1122,14 +1135,14 @@ function interpolateScheme(key, t) {
     Math.round(a[0] + f * (b[0] - a[0])),
     Math.round(a[1] + f * (b[1] - a[1])),
     Math.round(a[2] + f * (b[2] - a[2])),
-    255,
+    190,
   ];
 }
 
 function getColor(value, minV, maxV, compare=false) {
   if (compare) {
-    if (value < 0) return [249, 115, 22, 255];
-    return [45, 212, 247, 255];
+    if (value < 0) return [249, 115, 22, 190];
+    return [45, 212, 247, 190];
   }
   const t = maxV > minV ? (value - minV) / (maxV - minV) : 0;
   return interpolateScheme(state.colorScheme, t);
@@ -1176,8 +1189,6 @@ function updateDeckLayer() {
     getElevation: 0,
 
     getFillColor: f => {
-      if (selectedName && f.properties.municipio === selectedName) return [249, 115, 22, 255];
-
       if (state.compareMode && compareGj) {
         const other = compareGj.features.find(o => o.properties.municipio === f.properties.municipio);
         if (other) {
@@ -1188,25 +1199,36 @@ function updateDeckLayer() {
       return getColor(getIndicatorValue(f.properties, key), minV, maxV);
     },
 
-    getLineColor: f => {
-      const isSelected = state.selectedFeature &&
-        f.properties.municipio === state.selectedFeature.properties.municipio;
-      if (isSelected) return [0, 0, 0, 255];
-      return borderColor;
-
-    },
+    getLineColor: borderColor,
     getLineWidth: 0.5,
     lineWidthUnits: 'pixels',
     lineWidthMinPixels: 0.5,
 
     updateTriggers: {
-      getFillColor: [state.colorScheme, state.invertColorScheme, state.selectedIndicator, state.compareMode, state.activeYear, minV, maxV, selectedName],
+      getFillColor: [state.colorScheme, state.invertColorScheme, state.selectedIndicator, state.compareMode, state.activeYear, minV, maxV],
       getElevation: [state.selectedIndicator, state.compareMode, state.activeYear, state.elevationScale, maxV],
-      getLineColor: [state.theme, selectedName],
+      getLineColor: [state.theme],
     },
   });
 
-  deckInstance.setProps({ layers: [layer] });
+  const layers = [layer];
+
+  if (state.selectedFeature) {
+    layers.push(new deck.GeoJsonLayer({
+      id: 'concelhos-highlight',
+      data: { type: 'FeatureCollection', features: [state.selectedFeature] },
+      extruded: false,
+      pickable: false,
+      stroked: true,
+      filled: false,
+      getLineColor: [0, 0, 0, 255],
+      getLineWidth: 4,
+      lineWidthUnits: 'pixels',
+      lineWidthMinPixels: 4,
+    }));
+  }
+
+  deckInstance.setProps({ layers });
 
 }
 
@@ -1221,12 +1243,12 @@ function selectFeature(feature) {
   const coords = feature.geometry.coordinates.flat(Infinity);
   let lngs = [], lats = [];
   for (let i=0; i<coords.length; i+=2) { lngs.push(coords[i]); lats.push(coords[i+1]); }
-  const cLng = (Math.min(...lngs)+Math.max(...lngs))/2;
-  const cLat = (Math.min(...lats)+Math.max(...lats))/2;
-
   // MapLibre anima; DeckGL segue via mapgl.on('move', syncDeck)
   if (window._mapgl) {
-    window._mapgl.flyTo({ center: [cLng, cLat], zoom: 7.8, pitch: 45, bearing: -20, duration: 1200 });
+    window._mapgl.fitBounds(
+      [[Math.min(...lngs), Math.min(...lats)], [Math.max(...lngs), Math.max(...lats)]],
+      { padding: 80, pitch: 45, bearing: -20, duration: 1200, maxZoom: 11 }
+    );
   }
 
   updateDeckLayer();
@@ -1267,7 +1289,7 @@ function fillCard1(p, isNational) {
   document.getElementById('card-city-name').textContent = p.municipio;
   document.getElementById('s-pop').textContent  = formatNum(p.PopResidente_2021) + ' hab.';
   document.getElementById('s-area').textContent = (+p.area_km2).toFixed(1) + ' km²';
-  document.getElementById('s-cic').textContent  = formatNum(p.ExtensaoCiclovias_conc) + ' m';
+  document.getElementById('s-cic').textContent  = (parseFloat(p.ExtensaoCiclovias_conc)/1000).toFixed(1) + ' km';
   document.getElementById('s-inv').textContent  = '€ ' + formatNum(Math.round(p.Total_Valor_Euros));
   document.getElementById('s-util').textContent = (p.UtilizacaoBicicleta*100).toFixed(1) + '%';
   document.getElementById('s-mulh').textContent = (p.UtilizacaoMulheres*100).toFixed(1) + '%';
@@ -1772,10 +1794,7 @@ function toggleTheme() {
   svg.innerHTML = isLight ? MOON_ICON : SUN_ICON;
 
   // Swap map tiles
-  if (window._mapgl) {
-    window._mapgl.setLayoutProperty('base-dark',  'visibility', isLight ? 'none'    : 'visible');
-    window._mapgl.setLayoutProperty('base-light', 'visibility', isLight ? 'visible' : 'none');
-  }
+  if (window._mapgl) applyBasemap();
 
   // Redraw geometry and charts
   updateDeckLayer();
@@ -1790,6 +1809,23 @@ function formatNum(n) {
   const v = parseFloat(n);
   if (isNaN(v)) return '—';
   return Math.round(v).toLocaleString('pt-PT');
+}
+
+// ════════════════════════════════════════════════════════
+// BASEMAP TOGGLE
+// ════════════════════════════════════════════════════════
+function applyBasemap() {
+  const isDark = state.theme === 'dark';
+  window._mapgl.setLayoutProperty('base-dark',     'visibility', isDark ? 'visible' : 'none');
+  window._mapgl.setLayoutProperty('base-positron', 'visibility', !isDark && state.basemap === 'positron' ? 'visible' : 'none');
+  window._mapgl.setLayoutProperty('base-osm',      'visibility', !isDark && state.basemap === 'osm'      ? 'visible' : 'none');
+  const btn = document.getElementById('btn-basemap');
+  if (btn) btn.querySelector('.tooltip').textContent = state.basemap === 'positron' ? 'Tiles: OSM' : 'Tiles: Positron';
+}
+
+function toggleBasemap() {
+  state.basemap = state.basemap === 'positron' ? 'osm' : 'positron';
+  if (window._mapgl) applyBasemap();
 }
 
 // ════════════════════════════════════════════════════════
