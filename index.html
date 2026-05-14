@@ -544,6 +544,17 @@
 
   #float-gauge { text-align: center; }
 
+  #map-indicator-label {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   #float-left .city-name-big {
     font-size: 30px;
     margin-bottom: 4px;
@@ -816,6 +827,7 @@
 <!-- FLOATING LEFT OVERLAY -->
 <div id="float-left">
   <div id="float-gauge">
+    <div id="map-indicator-label">BFI Total</div>
     <div class="gauge-container">
       <svg id="gauge-svg" width="209" height="209" viewBox="0 0 130 130"></svg>
       <div class="gauge-label-center">
@@ -870,12 +882,12 @@
 // CONFIG & STATE
 // ════════════════════════════════════════════════════════
 const INDICATORS = [
-  { key: 'bfi_2025',    label: 'BFI Total',          color: '#4af0a0' },
-  { key: 'c1_declive',  label: 'C1 · Declive',       color: '#2dd4f7' },
-  { key: 'c2_ambcon',   label: 'C2 · Amb. Construído', color: '#a78bfa' },
-  { key: 'c3_infraest', label: 'C3 · Infraestruturas', color: '#f97316' },
-  { key: 'c4_compolit', label: 'C4 · Comp. Político', color: '#f59e0b' },
-  { key: 'c5_utiliza',  label: 'C5 · Utilização',    color: '#ec4899' },
+  { key: 'bfi_2025',    label: 'BFI Total',          color: '#4eb3d3', scheme: 'gnbu'      },
+  { key: 'c1_declive',  label: 'C1 · Declive',       color: '#41ab5d', scheme: 'greens'    },
+  { key: 'c2_ambcon',   label: 'C2 · Amb. Construído', color: '#d75a2d', scheme: 'brick'   },
+  { key: 'c3_infraest', label: 'C3 · Infraestruturas', color: '#f0730a', scheme: 'oranges' },
+  { key: 'c4_compolit', label: 'C4 · Comp. Político', color: '#807dba', scheme: 'purples'  },
+  { key: 'c5_utiliza',  label: 'C5 · Utilização',    color: '#4292c6', scheme: 'blues'     },
 ];
 
 const DIM_LABELS = ['Declive','Amb. Construído','Infraestruturas','Comp. Político','Utilização'];
@@ -1005,6 +1017,7 @@ function initMap() {
     minpitch: 0,
     maxpitch: 75,
     bearing: 0,
+    padding: { top: 0, bottom: 0, left: 320, right: 0 },
     maxBounds: [[-16, 36], [-0.5, 43.5]],
     minZoom: 4,
     maxZoom: 12,
@@ -1121,7 +1134,12 @@ function getIndicatorValue(props, key) {
 // };
 
 const COLOR_SCHEMES = {
-  gnbu: {label: 'GnBu', stops: [[247,252,240],[224,243,219],[204,235,197],[168,221,181],[123,204,196],[78,179,211],[43,140,190],[8,104,172],[8,64,129]]},
+  gnbu:    {label: 'GnBu',     stops: [[247,252,240],[224,243,219],[204,235,197],[168,221,181],[123,204,196],[78,179,211],[43,140,190],[8,104,172],[8,64,129]]},
+  greens:  {label: 'Greens',   stops: [[247,252,245],[229,245,224],[199,233,192],[161,217,155],[116,196,118],[65,171,93],[35,139,69],[0,109,44],[0,68,27]]},
+  brick:   {label: 'Brick',    stops: [[255,250,245],[254,235,215],[252,210,178],[248,175,130],[238,135,85],[215,90,45],[180,55,20],[145,35,10],[105,20,5]]},
+  oranges: {label: 'Oranges',  stops: [[255,255,240],[255,245,210],[254,227,165],[254,201,108],[253,161,55],[240,115,10],[210,75,0],[170,45,0],[130,25,0]]},
+  purples: {label: 'Purples',  stops: [[252,251,253],[239,237,245],[218,218,235],[188,189,220],[158,154,200],[128,125,186],[106,81,163],[84,39,143],[63,0,125]]},
+  blues:   {label: 'Blues',    stops: [[247,251,255],[222,235,247],[198,219,239],[158,202,225],[107,174,214],[66,146,198],[33,113,181],[8,81,156],[8,48,107]]},
 };
 
 function interpolateScheme(key, t) {
@@ -1145,7 +1163,9 @@ function getColor(value, minV, maxV, compare=false) {
     return [45, 212, 247, 190];
   }
   const t = maxV > minV ? (value - minV) / (maxV - minV) : 0;
-  return interpolateScheme(state.colorScheme, t);
+  const ind = INDICATORS.find(i => i.key === state.selectedIndicator);
+  const schemeKey = (ind && ind.scheme) ? ind.scheme : state.colorScheme;
+  return interpolateScheme(schemeKey, t);
 }
 
 function updateDeckLayer() {
@@ -1247,7 +1267,7 @@ function selectFeature(feature) {
   if (window._mapgl) {
     window._mapgl.fitBounds(
       [[Math.min(...lngs), Math.min(...lats)], [Math.max(...lngs), Math.max(...lats)]],
-      { padding: 80, pitch: 45, bearing: -20, duration: 1200, maxZoom: 11 }
+      { padding: { top: 80, bottom: 80, left: 400, right: 80 }, pitch: 45, bearing: -20, duration: 1200, maxZoom: 11 }
     );
   }
 
@@ -1462,6 +1482,8 @@ function buildSidebar() {
       document.querySelectorAll('.indicator-option').forEach(el => el.classList.remove('selected'));
       div.classList.add('selected');
       state.selectedIndicator = ind.key;
+      const lbl = document.getElementById('map-indicator-label');
+      if (lbl) lbl.textContent = ind.label;
       updateDeckLayer();
       if(state.selectedFeature) showPanel(state.selectedFeature.properties);
       else showNationalPanel();
@@ -1483,7 +1505,7 @@ function buildColorSchemeList() {
   const invertRow = document.createElement('div');
   invertRow.className = 'toggle-row';
   invertRow.innerHTML = `
-    <span style="font-size:11px;color:var(--muted);">Inverter rampa GnBu</span>
+    <span style="font-size:11px;color:var(--muted);">Inverter rampa de cor</span>
     <div class="toggle-switch${state.invertColorScheme ? ' on' : ''}" id="invert-toggle" onclick="toggleColorInvert()"></div>`;
   list.appendChild(invertRow);
 }
@@ -1696,7 +1718,7 @@ document.addEventListener('click', e => {
 function goHome() {
   state.selectedFeature = null;
   if (window._mapgl) {
-    window._mapgl.flyTo({ center: [-8, 39.6], zoom: 6.2, pitch: 0, bearing: 0, duration: 1200 });
+    window._mapgl.flyTo({ center: [-8, 39.6], zoom: 6.2, pitch: 0, bearing: 0, padding: { top: 0, bottom: 0, left: 320, right: 0 }, duration: 1200 });
   }
   updateDeckLayer();
   showNationalPanel();
