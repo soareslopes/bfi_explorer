@@ -1017,7 +1017,6 @@ function initMap() {
     minpitch: 0,
     maxpitch: 75,
     bearing: 0,
-    padding: { top: 0, bottom: 0, left: 320, right: 0 },
     maxBounds: [[-16, 36], [-0.5, 43.5]],
     minZoom: 4,
     maxZoom: 12,
@@ -1267,7 +1266,7 @@ function selectFeature(feature) {
   if (window._mapgl) {
     window._mapgl.fitBounds(
       [[Math.min(...lngs), Math.min(...lats)], [Math.max(...lngs), Math.max(...lats)]],
-      { padding: { top: 80, bottom: 80, left: 400, right: 80 }, pitch: 45, bearing: -20, duration: 1200, maxZoom: 11 }
+      { padding: 80, pitch: 45, bearing: -20, duration: 1200, maxZoom: 11 }
     );
   }
 
@@ -1718,7 +1717,7 @@ document.addEventListener('click', e => {
 function goHome() {
   state.selectedFeature = null;
   if (window._mapgl) {
-    window._mapgl.flyTo({ center: [-8, 39.6], zoom: 6.2, pitch: 0, bearing: 0, padding: { top: 0, bottom: 0, left: 320, right: 0 }, duration: 1200 });
+    window._mapgl.flyTo({ center: [-8, 39.6], zoom: 6.2, pitch: 0, bearing: 0, duration: 1200 });
   }
   updateDeckLayer();
   showNationalPanel();
