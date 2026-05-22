@@ -1277,7 +1277,7 @@ function selectFeature(feature) {
   const minLat = Math.min(...lats), maxLat = Math.max(...lats);
   if (window._mapgl) {
     window._mapgl.fitBounds(
-      [[minLng - 0.15, minLat], [maxLng - 0.15, maxLat]],
+      [[minLng, minLat], [maxLng, maxLat]],
       { padding: 80, pitch: 45, bearing: -20, duration: 1200, maxZoom: 11 }
     );
   }
