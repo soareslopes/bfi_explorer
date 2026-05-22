@@ -827,7 +827,7 @@
 <!-- FLOATING LEFT OVERLAY -->
 <div id="float-left">
   <div id="float-gauge">
-    <div id="map-indicator-label">BFI Total</div>
+    <div id="map-indicator-label">BFI</div>
     <div class="gauge-container">
       <svg id="gauge-svg" width="209" height="209" viewBox="0 0 130 130"></svg>
       <div class="gauge-label-center">
@@ -838,6 +838,16 @@
   </div>
 
   <div id="float-summary">
+    <div class="radar-legend" style="margin-bottom:6px;">
+      <div class="legend-item">
+        <div class="legend-line" style="background:#c05000;height:3px;"></div>
+        <span id="gauge-legend-city-label" style="font-size:10px;color:var(--muted);">Concelho</span>
+      </div>
+      <div class="legend-item" id="gauge-legend-pt-item">
+        <div class="legend-line" style="background:rgba(255,140,0,0.85);"></div>
+        <span style="font-size:10px;color:var(--muted);">Nacional</span>
+      </div>
+    </div>
     <div class="city-name-big" id="card-city-name">Portugal</div>
     <div class="float-stats">
       <div class="float-stat"><span class="stat-label">Ranking</span><span class="stat-value" id="s-rank">—</span></div>
@@ -846,8 +856,8 @@
       <div class="float-stat"><span class="stat-label">Ciclovias</span><span class="stat-value accent" id="s-cic">—</span></div>
       <div class="float-stat"><span class="stat-label">Bike Share</span><span class="stat-value" id="s-bs">—</span></div>
       <div class="float-stat"><span class="stat-label" id="s-inv-label">Investimento</span><span class="stat-value" id="s-inv">—</span></div>
-      <div class="float-stat"><span class="stat-label">Utilização</span><span class="stat-value" id="s-util">—</span></div>
-      <div class="float-stat"><span class="stat-label">Utilização Mulheres</span><span class="stat-value" id="s-mulh">—</span></div>
+      <div class="float-stat"><span class="stat-label">Taxa de ciclismo</span><span class="stat-value" id="s-util">—</span></div>
+      <div class="float-stat"><span class="stat-label">Homens · Mulheres</span><span class="stat-value"><span id="s-hom">—</span><span style="color:var(--muted);margin:0 5px">|</span><span id="s-mulh">—</span></span></div>
     </div>
   </div>
 
@@ -946,6 +956,7 @@ async function boot() {
   }
 
   buildSidebar();
+  updateIndicatorLabel();
   initMap();
 }
 
@@ -1008,10 +1019,10 @@ function initMap() {
       layers: [
         { id: 'base-dark',     type: 'raster', source: 'carto-dark',  layout: { visibility: 'none'    } },
         { id: 'base-positron', type: 'raster', source: 'carto-light', layout: { visibility: 'visible' } },
-        { id: 'base-osm',      type: 'raster', source: 'osm',         layout: { visibility: 'none'    } }
+        { id: 'base-osm',      type: 'raster', source: 'osm',         layout: { visibility: 'none'    }, paint: { 'raster-saturation': -1 } }
       ]
     },
-    center: [-8, 39.6],
+    center: [-8.5, 39.6],
     zoom: 6.2,
     pitch: 0,
     minpitch: 0,
@@ -1037,7 +1048,7 @@ function initMap() {
       width: '100%',
       height: '100%',
       initialViewState: {
-        longitude: -8,
+        longitude: -8.5,
         latitude: 39.6,
         zoom: 6.2,
         pitch: 0,
@@ -1138,7 +1149,6 @@ const COLOR_SCHEMES = {
   brick:   {label: 'Brick',    stops: [[255,250,245],[254,235,215],[252,210,178],[248,175,130],[238,135,85],[215,90,45],[180,55,20],[145,35,10],[105,20,5]]},
   oranges: {label: 'Oranges',  stops: [[255,255,240],[255,245,210],[254,227,165],[254,201,108],[253,161,55],[240,115,10],[210,75,0],[170,45,0],[130,25,0]]},
   purples: {label: 'Purples',  stops: [[252,251,253],[239,237,245],[218,218,235],[188,189,220],[158,154,200],[128,125,186],[106,81,163],[84,39,143],[63,0,125]]},
-  blues:   {label: 'Blues',    stops: [[247,251,255],[222,235,247],[198,219,239],[158,202,225],[107,174,214],[66,146,198],[33,113,181],[8,81,156],[8,48,107]]},
 };
 
 function interpolateScheme(key, t) {
@@ -1263,9 +1273,11 @@ function selectFeature(feature) {
   let lngs = [], lats = [];
   for (let i=0; i<coords.length; i+=2) { lngs.push(coords[i]); lats.push(coords[i+1]); }
   // MapLibre anima; DeckGL segue via mapgl.on('move', syncDeck)
+  const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
+  const minLat = Math.min(...lats), maxLat = Math.max(...lats);
   if (window._mapgl) {
     window._mapgl.fitBounds(
-      [[Math.min(...lngs), Math.min(...lats)], [Math.max(...lngs), Math.max(...lats)]],
+      [[minLng - 0.15, minLat], [maxLng - 0.15, maxLat]],
       { padding: 80, pitch: 45, bearing: -20, duration: 1200, maxZoom: 11 }
     );
   }
@@ -1279,6 +1291,8 @@ function showNationalPanel() {
   const tot = state.nationalTotal;
   const lcl = document.getElementById('legend-city-label'); if(lcl) lcl.textContent = 'Portugal';
   const ptLegend = document.getElementById('legend-pt-item'); if(ptLegend) ptLegend.style.display = 'none';
+  const glcl = document.getElementById('gauge-legend-city-label'); if(glcl) glcl.textContent = 'Portugal';
+  const gpt = document.getElementById('gauge-legend-pt-item'); if(gpt) gpt.style.display = 'none';
   fillCard1({
     municipio: 'Portugal',
     PopResidente_2021: 10343066,
@@ -1298,6 +1312,8 @@ function showPanel(p) {
   fillCard1(p, false);
   const lcl = document.getElementById('legend-city-label'); if(lcl) lcl.textContent = p.municipio;
   const ptLegend = document.getElementById('legend-pt-item'); if(ptLegend) ptLegend.style.display = '';
+  const glcl = document.getElementById('gauge-legend-city-label'); if(glcl) glcl.textContent = 'Concelho';
+  const gpt = document.getElementById('gauge-legend-pt-item'); if(gpt) gpt.style.display = '';
   fillGauge(parseFloat(p.bfi_2025), parseInt(p.bfi_Ranking));
   fillRadar(DIM_KEYS.map(k => parseFloat(p[k])), DIM_KEYS.map(k => state.nationalAvg[k]));
   showBottomPanels();
@@ -1311,7 +1327,9 @@ function fillCard1(p, isNational) {
   document.getElementById('s-cic').textContent  = (parseFloat(p.ExtensaoCiclovias_conc)/1000).toFixed(1) + ' km';
   document.getElementById('s-inv').textContent  = '€ ' + formatNum(Math.round(p.Total_Valor_Euros));
   document.getElementById('s-util').textContent = (p.UtilizacaoBicicleta*100).toFixed(1) + '%';
-  document.getElementById('s-mulh').textContent = (p.UtilizacaoMulheres*100).toFixed(1) + '%';
+  const mulhPct = p.UtilizacaoMulheres * 100;
+  document.getElementById('s-mulh').textContent = mulhPct.toFixed(1) + '%';
+  document.getElementById('s-hom').textContent  = (100 - mulhPct).toFixed(1) + '%';
 
   const bs = document.getElementById('s-bs');
   if (isNational) {
@@ -1470,6 +1488,17 @@ function fillRadar(cityVals, avgVals) {
 // ════════════════════════════════════════════════════════
 // SIDEBAR BUILDER
 // ════════════════════════════════════════════════════════
+function updateIndicatorLabel() {
+  const lbl = document.getElementById('map-indicator-label');
+  if (!lbl) return;
+  if (state.selectedIndicator === 'bfi_2025') {
+    lbl.textContent = 'BFI ' + (state.activeYear ?? '');
+  } else {
+    const ind = INDICATORS.find(i => i.key === state.selectedIndicator);
+    lbl.textContent = ind ? ind.label : '';
+  }
+}
+
 function buildSidebar() {
   // Indicators
   const indList = document.getElementById('indicator-list');
@@ -1507,6 +1536,27 @@ function buildColorSchemeList() {
     <span style="font-size:11px;color:var(--muted);">Inverter rampa de cor</span>
     <div class="toggle-switch${state.invertColorScheme ? ' on' : ''}" id="invert-toggle" onclick="toggleColorInvert()"></div>`;
   list.appendChild(invertRow);
+
+  const lngVal = window._mapCenter ?? -10;
+  const sliderRow = document.createElement('div');
+  sliderRow.style.cssText = 'margin-top:10px;';
+  sliderRow.innerHTML = `
+    <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">
+      Centro mapa (lng): <strong id="lng-display">${lngVal.toFixed(1)}°</strong>
+    </div>
+    <input id="lng-slider" type="range" min="-16" max="-4" step="0.1"
+      value="${lngVal}"
+      style="width:100%;accent-color:var(--accent);cursor:pointer;"
+      oninput="setMapCenter(parseFloat(this.value))">`;
+  list.appendChild(sliderRow);
+}
+
+function setMapCenter(lng) {
+  window._mapCenter = lng;
+  document.getElementById('lng-display').textContent = lng.toFixed(1) + '°';
+  if (window._mapgl) {
+    window._mapgl.setCenter([lng, window._mapgl.getCenter().lat]);
+  }
 }
 
 function toggleColorInvert() {
@@ -1717,7 +1767,7 @@ document.addEventListener('click', e => {
 function goHome() {
   state.selectedFeature = null;
   if (window._mapgl) {
-    window._mapgl.flyTo({ center: [-8, 39.6], zoom: 6.2, pitch: 0, bearing: 0, duration: 1200 });
+    window._mapgl.flyTo({ center: [-8.5, 39.6], zoom: 6.2, pitch: 0, bearing: 0, duration: 1200 });
   }
   updateDeckLayer();
   showNationalPanel();
@@ -1837,11 +1887,16 @@ function formatNum(n) {
 // ════════════════════════════════════════════════════════
 function applyBasemap() {
   const isDark = state.theme === 'dark';
-  window._mapgl.setLayoutProperty('base-dark',     'visibility', isDark ? 'visible' : 'none');
-  window._mapgl.setLayoutProperty('base-positron', 'visibility', !isDark && state.basemap === 'positron' ? 'visible' : 'none');
-  window._mapgl.setLayoutProperty('base-osm',      'visibility', !isDark && state.basemap === 'osm'      ? 'visible' : 'none');
+  const useOsm = state.basemap === 'osm';
+  window._mapgl.setLayoutProperty('base-dark',     'visibility', isDark  && !useOsm ? 'visible' : 'none');
+  window._mapgl.setLayoutProperty('base-positron', 'visibility', !isDark && !useOsm ? 'visible' : 'none');
+  window._mapgl.setLayoutProperty('base-osm',      'visibility', useOsm ? 'visible' : 'none');
+  if (useOsm) {
+    window._mapgl.setPaintProperty('base-osm', 'raster-brightness-max', isDark ? 0.18 : 1);
+    window._mapgl.setPaintProperty('base-osm', 'raster-contrast',       isDark ? 0.4  : 0);
+  }
   const btn = document.getElementById('btn-basemap');
-  if (btn) btn.querySelector('.tooltip').textContent = state.basemap === 'positron' ? 'Tiles: OSM' : 'Tiles: Positron';
+  if (btn) btn.querySelector('.tooltip').textContent = useOsm ? 'Tiles: Positron/Dark' : 'Tiles: OSM';
 }
 
 function toggleBasemap() {
@@ -1853,6 +1908,8 @@ function toggleBasemap() {
 // START
 // ════════════════════════════════════════════════════════
 boot();
+
 </script>
+
 </body>
 </html>
