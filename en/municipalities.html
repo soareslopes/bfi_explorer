@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>All 278 municipalities · Bike Friendly Index</title>
+<meta name="description" content="Bike Friendly Index cards for the 278 municipalities of mainland Portugal.">
+<link rel="canonical" href="https://soareslopes.github.io/bfi_explorer/en/municipalities.html">
+<link rel="alternate" hreflang="en" href="https://soareslopes.github.io/bfi_explorer/en/municipalities.html">
+<link rel="alternate" hreflang="pt" href="https://soareslopes.github.io/bfi_explorer/municipios.html">
+<link rel="alternate" hreflang="x-default" href="https://soareslopes.github.io/bfi_explorer/en/municipalities.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../assets/css/site.css?v=202611061753">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%9A%B2%3C/text%3E%3C/svg%3E">
+<script>window.LANG = "en";</script>
+
+</head>
+<body>
+<header class="nav"><div class="nav-in"><a class="brand" href="index.html"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><circle cx="8.5" cy="21.5" r="6" stroke="currentColor" stroke-width="2"/><circle cx="23.5" cy="21.5" r="6" stroke="currentColor" stroke-width="2"/><path d="M8.5 21.5 14 10h6l3.5 11.5M14 10h-3m3 0 4 11.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="20" cy="6.5" r="2.2" fill="currentColor"/></svg><b>Bike Friendly Index</b>&nbsp;<span>Portugal</span></a><button class="icon-btn nav-toggle" data-nav-toggle aria-label="Open menu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button><nav class="nav-links"><a href="index.html">About the index</a><a href="results-2025.html">BFI 2025</a><a href="results-2018.html">BFI 2018</a><a href="comparison.html">Comparison</a><a href="municipalities.html" aria-current="page">Municipalities</a><a href="explorer.html">Explorer</a><a href="methodology.html">Methodology</a><a href="data.html">Data</a><span class="nav-tools"><a class="langswitch" href="../municipios.html" hreflang="pt" lang="pt" title="Ler esta página em português">PT</a><button class="icon-btn" onclick="toggleTheme()" aria-label="Toggle light and dark mode" title="Light / dark mode"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button></span></nav></div></header>
+<main>
+
+<section class="tight">
+  <div class="wrap">
+    <p class="eyebrow">All 278 municipalities</p>
+    <h1 style="max-width:16ch">A card for every municipality</h1>
+    <p class="lead" style="max-width:60ch">One card per mainland Portuguese municipality: score, rank, profile across the five dimensions, all twenty-five raw indicators and the change since 2018.</p>
+  </div>
+</section>
+
+<section class="tight">
+  <div class="wrap">
+    <div class="controls">
+      <div class="field"><label>Search</label>
+        <input type="search" id="q" placeholder="Municipality name..."
+               aria-label="Search municipality"></div>
+      <div class="field"><label>District</label>
+        <select id="dist" aria-label="Filter by district"></select></div>
+      <div class="field"><label>Sort</label>
+        <select id="ord" aria-label="Sort">
+        <option value="rank">Highest BFI first</option>
+        <option value="rank-">Lowest BFI first</option>
+        <option value="nome">Name A to Z</option>
+        <option value="delta">Biggest rise since 2018</option>
+        <option value="delta-">Biggest fall since 2018</option>
+        <option value="pop">Population</option>
+      </select></div>
+      <div class="seg" id="filtro">
+        <button type="button" data-f="" aria-pressed="true">All</button>
+        <button type="button" data-f="cap">Capitals</button>
+        <button type="button" data-f="bs">With bike sharing</button>
+      </div>
+    </div>
+    <p class="small muted" id="cnt" style="margin:-4px 0 14px"></p>
+    <div class="mcards" id="cards"></div>
+    <p id="vazio" class="muted" style="display:none;padding:40px 0;text-align:center">No municipality matches this search.</p>
+  </div>
+</section>
+
+</main>
+<footer class="ft"><div class="wrap"><div class="ft-grid"><div><a class="brand" href="index.html" style="margin-bottom:12px"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><circle cx="8.5" cy="21.5" r="6" stroke="currentColor" stroke-width="2"/><circle cx="23.5" cy="21.5" r="6" stroke="currentColor" stroke-width="2"/><path d="M8.5 21.5 14 10h6l3.5 11.5M14 10h-3m3 0 4 11.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="20" cy="6.5" r="2.2" fill="currentColor"/></svg><b>Bike Friendly Index</b></a><p class="cite">An index of how friendly each mainland Portuguese municipality is to cycling as a mode of urban transport. 2018 and 2025 editions.</p><p class="cite" style="margin-top:14px"><strong>How to cite:</strong><br>Figueiredo, A. P., Vale, D. S. &amp; Lopes, A. S. (2025). <em>Bike Friendly Index Portugal 2025</em>. BEAM, Faculdade de Arquitectura, Universidade de Lisboa.</p></div><div><h4>Results</h4><a href="results-2025.html">BFI 2025</a><a href="results-2018.html">BFI 2018</a><a href="comparison.html">Comparison</a><a href="municipalities.html">All 278 municipalities</a></div><div><h4>Explore</h4><a href="explorer.html">Interactive map</a><a href="compare.html">Compare municipalities</a><a href="data.html">Open data</a></div><div><h4>Project</h4><a href="methodology.html">Methodology</a><a href="about.html">Team and citation</a><a href="../explorador-v1/">Previous explorer</a><a href="https://github.com/soareslopes/bfi_explorer" target="_blank" rel="noopener">Repository</a></div></div><div class="ft-base"><span>BEAM · Faculty of Architecture · University of Lisbon</span><span><a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a></span></div></div></footer>
+<script src="../assets/js/i18n.js?v=202611061753"></script>
+<script src="../assets/js/data.js?v=202611061753"></script>
+<script src="../assets/js/geo.js?v=202611061753"></script>
+<script src="../assets/js/app.js?v=202611061753"></script>
+<script src="../assets/js/charts.js?v=202611061753"></script>
+<script src="../assets/js/map.js?v=202611061753"></script>
+<script src="../assets/js/table.js?v=202611061753"></script>
+<script>
+(function(){
+  var q='', dist='', ord='rank', filtro='';
+  var cards = document.getElementById('cards'), selD = document.getElementById('dist');
+  selD.appendChild(h('option',{value:''}, T.allDistricts));
+  M.distritos.forEach(function(d){ selD.appendChild(h('option',{value:d},d)); });
+  function norm(s){ return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+
+  function lista(){
+    var out = M.all.filter(function(m){
+      if(!m.s25) return false;
+      if(dist && m.dist!==dist) return false;
+      if(filtro==='cap' && !m.cap) return false;
+      if(filtro==='bs' && !m.bs) return false;
+      if(q && norm(m.n+' '+m.dist).indexOf(q)<0) return false;
+      return true;
+    });
+    var d = function(m){ return m.s18c ? m.s25.bfi-m.s18c.bfi : 0; };
+    return out.sort({
+      'rank':  function(a,b){ return a.s25.rank-b.s25.rank; },
+      'rank-': function(a,b){ return b.s25.rank-a.s25.rank; },
+      'nome':  function(a,b){ return a.n.localeCompare(b.n,'pt'); },
+      'delta': function(a,b){ return d(b)-d(a); },
+      'delta-':function(a,b){ return d(a)-d(b); },
+      'pop':   function(a,b){ return (b.pop||0)-(a.pop||0); }
+    }[ord]);
+  }
+
+  function draw(){
+    var data = lista();
+    document.getElementById('cnt').textContent = data.length+' '+T.of+' '+M.all.length+' '+T.municipalities;
+    document.getElementById('vazio').style.display = data.length ? 'none' : 'block';
+    cards.innerHTML = '';
+    var frag = document.createDocumentFragment();
+    data.forEach(function(m){
+      var dv = m.s18c ? m.s25.bfi-m.s18c.bfi : null;
+      var dcls = dv===null ? 'flat' : (dv>0.05?'up':(dv<-0.05?'down':'flat'));
+      frag.appendChild(h('a',{class:'mcard', href:'municipality/'+m.slug+'.html'},
+        '<span class="rank">'+m.s25.rank+'</span>'+
+        '<div class="nm">'+esc(m.n)+'</div>'+
+        '<div class="ds">'+esc(m.dist)+(m.cap?' · '+T.capital:'')+'</div>'+
+        '<div class="sc"><b>'+F.n(m.s25.bfi,2)+'</b><i>BFI 2025</i>'+
+        (dv===null?'':'<span class="delta '+dcls+'" style="margin-left:auto">'+F.sign(dv,2)+'</span>')+'</div>'+
+        '<div class="spark" title="C1-C5">'+sparkDims(m.s25)+'</div>'));
+    });
+    cards.appendChild(frag);
+  }
+
+  document.getElementById('q').addEventListener('input', function(){ q=norm(this.value.trim()); draw(); });
+  selD.addEventListener('change', function(){ dist=this.value; draw(); });
+  document.getElementById('ord').addEventListener('change', function(){ ord=this.value; draw(); });
+  document.getElementById('filtro').addEventListener('click', function(ev){
+    var b=ev.target.closest('button[data-f]'); if(!b) return;
+    filtro=b.dataset.f;
+    this.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed','false');});
+    b.setAttribute('aria-pressed','true'); draw();
+  });
+  draw();
+  cards._redraw = draw; cards.setAttribute('data-redraw','1');
+})();
+</script>
+</body>
+</html>

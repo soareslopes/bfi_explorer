@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Metodologia · Bike Friendly Index</title>
+<meta name="description" content="Como é calculado o Bike Friendly Index: dimensões, indicadores, pesos, normalização e fontes.">
+<link rel="canonical" href="https://soareslopes.github.io/bfi_explorer/metodologia.html">
+<link rel="alternate" hreflang="pt" href="https://soareslopes.github.io/bfi_explorer/metodologia.html">
+<link rel="alternate" hreflang="en" href="https://soareslopes.github.io/bfi_explorer/en/methodology.html">
+<link rel="alternate" hreflang="x-default" href="https://soareslopes.github.io/bfi_explorer/en/methodology.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/css/site.css?v=202611061753">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%9A%B2%3C/text%3E%3C/svg%3E">
+<script>window.LANG = "pt";</script>
+
+</head>
+<body>
+<header class="nav"><div class="nav-in"><a class="brand" href="index.html"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><circle cx="8.5" cy="21.5" r="6" stroke="currentColor" stroke-width="2"/><circle cx="23.5" cy="21.5" r="6" stroke="currentColor" stroke-width="2"/><path d="M8.5 21.5 14 10h6l3.5 11.5M14 10h-3m3 0 4 11.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="20" cy="6.5" r="2.2" fill="currentColor"/></svg><b>Bike Friendly Index</b>&nbsp;<span>Portugal</span></a><button class="icon-btn nav-toggle" data-nav-toggle aria-label="Abrir menu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button><nav class="nav-links"><a href="index.html">Apresentação</a><a href="resultados-2025.html">BFI 2025</a><a href="resultados-2018.html">BFI 2018</a><a href="comparacao.html">Comparação</a><a href="municipios.html">Municípios</a><a href="explorador.html">Explorador</a><a href="metodologia.html" aria-current="page">Metodologia</a><a href="dados.html">Dados</a><span class="nav-tools"><a class="langswitch" href="en/methodology.html" hreflang="en" lang="en" title="Read this page in English">EN</a><button class="icon-btn" onclick="toggleTheme()" aria-label="Alternar modo claro e escuro" title="Modo claro / escuro"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button></span></nav></div></header>
+<main>
+
+<section class="tight">
+  <div class="wrap">
+    <p class="eyebrow">Como é calculado</p>
+    <h1 style="max-width:14ch">Metodologia</h1>
+    <p class="lead" style="max-width:64ch">Cinco dimensões, vinte e cinco indicadores, 278 municípios, exclusivamente a partir de dados abertos.</p>
+  </div>
+</section>
+
+<section class="tight">
+  <div class="wrap">
+    <div class="prose">
+      <h2>A ideia</h2>
+      <p>O Bike Friendly Index avalia a amigabilidade de um município para a utilização da bicicleta como modo de transporte urbano. Foi construído a partir da literatura científica sobre os factores que explicam os níveis de utilização da bicicleta, aos quais se acrescentou o compromisso político, para medir quanto cada município está efectivamente a investir na promoção da bicicleta e da mobilidade urbana sustentável.</p>
+      <p>Os valores são normalizados numa escala de 0 a 10. O índice final é uma média ponderada das cinco dimensões, e cada dimensão é por sua vez uma média ponderada dos seus indicadores.</p>
+
+      <h2>Os pesos mudaram em 2025</h2>
+      <p>A edição de 2025 reequilibra os pesos: retira importância ao que é herdado do território, como o declive, e reforça o que depende de decisão política e de comportamento, como o investimento municipal e a utilização efectiva.</p>
+      <table><thead><tr><th>Dimensão</th>
+      <th style="text-align:right">Peso em 2018</th>
+      <th style="text-align:right">Peso em 2025</th></tr></thead>
+      <tbody><tr><td><strong>C1</strong> Declive</td><td class="n">15%</td><td class="n">10%</td></tr><tr><td><strong>C2</strong> Ambiente construído</td><td class="n">30%</td><td class="n">25%</td></tr><tr><td><strong>C3</strong> Infraestruturas</td><td class="n">25%</td><td class="n">25%</td></tr><tr><td><strong>C4</strong> Compromisso político</td><td class="n">15%</td><td class="n">20%</td></tr><tr><td><strong>C5</strong> Utilização</td><td class="n">15%</td><td class="n">20%</td></tr></tbody></table>
+
+      <h2>Normalização</h2>
+      <p>Em 2025 convivem três regimes de normalização, consoante a natureza de cada indicador:</p>
+      <ul>
+        <li><strong>Benchmark pelo máximo observado.</strong> Infraestruturas, compromisso político e utilização. O melhor município do país define o 10 e todos os outros são medidos contra ele.</li>
+        <li><strong>Limiares normativos com tecto.</strong> As quatro densidades. Acima de 3000 hab/km² em área urbana, 1000 hab/km² no concelho, 1200 e 400 alojamentos por km² respectivamente, considera-se que já não há ganho adicional para a mobilidade ciclável.</li>
+        <li><strong>Min-Max.</strong> Os restantes indicadores de declive e ambiente construído, para os quais não existe referencial externo. O indicador de comprimento médio de bloco é invertido, porque blocos mais curtos favorecem a bicicleta.</li>
+      </ul>
+
+      <h2>Os vinte e cinco indicadores</h2>
+      <h3>C1 Declive <span class="muted" style="font-weight:400">· 10% do índice · 4 indicadores</span></h3><p class="muted">Condições topográficas do concelho e das suas áreas urbanas.</p><table><thead><tr><th>Código</th><th>Indicador</th><th>Unidade</th><th style="text-align:right">Peso na dimensão</th></tr></thead><tbody><tr><td class="num">DEC1</td><td>Área do concelho com declive inferior a 5%</td><td class="muted small">%</td><td class="n">15%</td></tr><tr><td class="num">DEC2</td><td>Área urbana com declive inferior a 5%</td><td class="muted small">%</td><td class="n">35%</td></tr><tr><td class="num">DEC3</td><td>Área do concelho com declive inferior a 10%</td><td class="muted small">%</td><td class="n">15%</td></tr><tr><td class="num">DEC4</td><td>Área urbana com declive inferior a 10%</td><td class="muted small">%</td><td class="n">35%</td></tr></tbody></table><h3>C2 Ambiente construído <span class="muted" style="font-weight:400">· 25% do índice · 9 indicadores</span></h3><p class="muted">Densidade, diversidade de usos e desenho urbano, os três D que explicam a procura de mobilidade activa.</p><table><thead><tr><th>Código</th><th>Indicador</th><th>Unidade</th><th style="text-align:right">Peso na dimensão</th></tr></thead><tbody><tr><td class="num">AMB1</td><td>Densidade populacional na área urbana</td><td class="muted small">hab/km²</td><td class="n">14%</td></tr><tr><td class="num">AMB2</td><td>Densidade populacional no concelho</td><td class="muted small">hab/km²</td><td class="n">6%</td></tr><tr><td class="num">AMB3</td><td>Densidade de alojamentos na área urbana</td><td class="muted small">aloj/km²</td><td class="n">14%</td></tr><tr><td class="num">AMB4</td><td>Densidade de alojamentos no concelho</td><td class="muted small">aloj/km²</td><td class="n">6%</td></tr><tr><td class="num">AMB5</td><td>Variedade de usos no concelho</td><td class="muted small">%</td><td class="n">15%</td></tr><tr><td class="num">AMB6</td><td>Variedade de usos na área urbana</td><td class="muted small">%</td><td class="n">15%</td></tr><tr><td class="num">AMB7</td><td>Amenidades por 10 mil habitantes</td><td class="muted small">n.º</td><td class="n">10%</td></tr><tr><td class="num">AMB8</td><td>Densidade de nós da rede urbana</td><td class="muted small">nós/km²</td><td class="n">10%</td></tr><tr><td class="num">AMB9</td><td>Comprimento médio de bloco</td><td class="muted small">m</td><td class="n">10%</td></tr></tbody></table><h3>C3 Infraestruturas <span class="muted" style="font-weight:400">· 25% do índice · 6 indicadores</span></h3><p class="muted">Extensão e cobertura da rede ciclável e existência de bicicletas partilhadas.</p><table><thead><tr><th>Código</th><th>Indicador</th><th>Unidade</th><th style="text-align:right">Peso na dimensão</th></tr></thead><tbody><tr><td class="num">INF1</td><td>Ciclovias por área do concelho</td><td class="muted small">m/km²</td><td class="n">9%</td></tr><tr><td class="num">INF2</td><td>Ciclovias por área urbana</td><td class="muted small">m/km²</td><td class="n">28%</td></tr><tr><td class="num">INF3</td><td>Ciclovias por habitante do concelho</td><td class="muted small">m/1000 hab</td><td class="n">9%</td></tr><tr><td class="num">INF4</td><td>Ciclovias por habitante da área urbana</td><td class="muted small">m/1000 hab</td><td class="n">28%</td></tr><tr><td class="num">INF5</td><td>Rácio ciclovias sobre vias principais</td><td class="muted small">rácio</td><td class="n">12%</td></tr><tr><td class="num">INF6</td><td>Sistema de bicicletas partilhadas</td><td class="muted small">sim/não</td><td class="n">14%</td></tr></tbody></table><h3>C4 Compromisso político <span class="muted" style="font-weight:400">· 20% do índice · 3 indicadores</span></h3><p class="muted">Investimento municipal em mobilidade sustentável no triénio 2023-2025.</p><table><thead><tr><th>Código</th><th>Indicador</th><th>Unidade</th><th style="text-align:right">Peso na dimensão</th></tr></thead><tbody><tr><td class="num">POL1</td><td>Investimento por km²</td><td class="muted small">€/km²</td><td class="n">20%</td></tr><tr><td class="num">POL2</td><td>Investimento por mil habitantes</td><td class="muted small">€/1000 hab</td><td class="n">40%</td></tr><tr><td class="num">POL3</td><td>Peso da mobilidade na despesa municipal</td><td class="muted small">%</td><td class="n">40%</td></tr></tbody></table><h3>C5 Utilização <span class="muted" style="font-weight:400">· 20% do índice · 3 indicadores</span></h3><p class="muted">Uso actual da bicicleta e dos modos activos, e o peso das mulheres entre quem pedala.</p><table><thead><tr><th>Código</th><th>Indicador</th><th>Unidade</th><th style="text-align:right">Peso na dimensão</th></tr></thead><tbody><tr><td class="num">UTI1</td><td>Peso da bicicleta na repartição modal</td><td class="muted small">%</td><td class="n">50%</td></tr><tr><td class="num">UTI2</td><td>Mulheres entre quem usa bicicleta</td><td class="muted small">% do total</td><td class="n">30%</td></tr><tr><td class="num">UTI3</td><td>Deslocações em modos activos</td><td class="muted small">%</td><td class="n">20%</td></tr></tbody></table>
+
+      <h2>Fontes</h2>
+      <p>Só foram usados dados abertos, por três razões: garantir acesso sem restrições proprietárias, permitir correcção e complemento das bases por qualquer pessoa, e assegurar que o método é replicável noutros contextos.</p>
+      <table><thead><tr><th>Fonte</th>
+      <th>O que fornece</th>
+      <th>Edição 2018</th>
+      <th>Edição 2025</th></tr></thead>
+      <tbody><tr><td>INE, Censos e BGRI</td><td>População, alojamentos, repartição modal, diversidade de usos</td><td>Censos 2011</td><td>Censos 2021</td></tr><tr><td>DGT</td><td>Limites administrativos e áreas urbanas</td><td>BGRI 2011 e CORINE Land Cover 2012</td><td>CAOP 2024 e Carta de Ocupação do Solo</td></tr><tr><td>OpenStreetMap</td><td>Rede ciclável, rede viária, amenidades, bicicletas partilhadas</td><td>Extracção de 2018</td><td>Extracção de 2025</td></tr><tr><td>Base.gov</td><td>Contratação pública em mobilidade sustentável</td><td>Triénio 2015-2017</td><td>Triénio 2023-2025</td></tr><tr><td>Modelo digital de elevação</td><td>Declive do terreno</td><td>EU-DEM, Copernicus</td><td>Modelo de alta resolução</td></tr></tbody></table>
+
+      <h2>Limitações conhecidas</h2>
+      <ul>
+        <li>A cobertura do OpenStreetMap é desigual, sobretudo em áreas de menor densidade populacional. O BFI devolve informação a essa base sempre que recolhe dados complementares.</li>
+        <li>A existência de sistemas de bicicletas partilhadas é tratada como sim ou não. Não há dados actualizados e credíveis sobre número de bicicletas, docas ou cobertura territorial de cada sistema.</li>
+        <li>O compromisso político mede investimento contratado, não investimento executado nem qualidade da intervenção. Um único contrato de dimensão elevada pode deslocar muito a posição de um município pequeno.</li>
+        <li>Em municípios de baixa densidade, denominadores pequenos tornam os indicadores per capita e por km² voláteis entre edições.</li>
+      </ul>
+
+      <div class="alertzone" style="margin-top:2em">
+        <button type="button" class="alertpop" aria-expanded="false" aria-label="Aviso metodológico" title="Aviso metodológico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.6 2.2 20.4h19.6L12 3.6Z"/><path d="M12 10v4.2M12 17.6v.01"/></svg><span class="pop" role="note"><p>Mudaram os pesos, o conjunto de indicadores e as fontes de base. Por isso os valores publicados em 2018 e em 2025 <strong>não são directamente comparáveis</strong>. Para a comparação usa-se uma série recalculada, em que os pesos de 2025 são aplicados aos indicadores de 2018.</p><p>Mesmo essa série tem um limite por resolver: a base de normalização continua a ser a de cada ano. Está em curso o trabalho de renormalizar ambas as edições contra um referencial comum.</p></span></button>
+        <h2 style="margin-top:0">Comparabilidade entre edições</h2>
+      </div>
+      <p>Os valores publicados em 2018 e em 2025 não são directamente comparáveis. A comparação usa uma série recalculada, com os pesos de 2025 aplicados aos indicadores de 2018.</p>
+
+      <h2>Licença e citação</h2>
+      <p>O BFI é disponibilizado sob licença <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a>, que permite remisturar, adaptar e reutilizar para fins não comerciais, com crédito e partilha nos mesmos termos.</p>
+      <blockquote>Figueiredo, A. P., Vale, D. S. &amp; Lopes, A. S. (2025).
+      <em>Bike Friendly Index Portugal 2025</em>. BEAM, Faculdade de Arquitectura,
+      Universidade de Lisboa.</blockquote>
+      <p class="small muted">Edição de 2018: Figueiredo, A. P. e Vale, D. S. (2018). <em>BikeFriendlyIndex, um índice para avaliação da amigabilidade de um concelho para a utilização da bicicleta enquanto modo de transporte urbano</em>.</p>
+    </div>
+  </div>
+</section>
+
+</main>
+<footer class="ft"><div class="wrap"><div class="ft-grid"><div><a class="brand" href="index.html" style="margin-bottom:12px"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><circle cx="8.5" cy="21.5" r="6" stroke="currentColor" stroke-width="2"/><circle cx="23.5" cy="21.5" r="6" stroke="currentColor" stroke-width="2"/><path d="M8.5 21.5 14 10h6l3.5 11.5M14 10h-3m3 0 4 11.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="20" cy="6.5" r="2.2" fill="currentColor"/></svg><b>Bike Friendly Index</b></a><p class="cite">Índice de amigabilidade dos municípios de Portugal Continental para a utilização da bicicleta como modo de transporte urbano. Edições de 2018 e 2025.</p><p class="cite" style="margin-top:14px"><strong>Como citar:</strong><br>Figueiredo, A. P., Vale, D. S. &amp; Lopes, A. S. (2025). <em>Bike Friendly Index Portugal 2025</em>. BEAM, Faculdade de Arquitectura, Universidade de Lisboa.</p></div><div><h4>Resultados</h4><a href="resultados-2025.html">BFI 2025</a><a href="resultados-2018.html">BFI 2018</a><a href="comparacao.html">Comparação</a><a href="municipios.html">Os 278 municípios</a></div><div><h4>Explorar</h4><a href="explorador.html">Mapa interactivo</a><a href="comparar.html">Comparar municípios</a><a href="dados.html">Dados abertos</a></div><div><h4>Projecto</h4><a href="metodologia.html">Metodologia</a><a href="sobre.html">Equipa e citação</a><a href="explorador-v1/">Explorador anterior</a><a href="https://github.com/soareslopes/bfi_explorer" target="_blank" rel="noopener">Repositório</a></div></div><div class="ft-base"><span>BEAM · Faculdade de Arquitectura · Universidade de Lisboa</span><span><a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a></span></div></div></footer>
+<script src="assets/js/i18n.js?v=202611061753"></script>
+<script src="assets/js/data.js?v=202611061753"></script>
+<script src="assets/js/geo.js?v=202611061753"></script>
+<script src="assets/js/app.js?v=202611061753"></script>
+<script src="assets/js/charts.js?v=202611061753"></script>
+<script src="assets/js/map.js?v=202611061753"></script>
+<script src="assets/js/table.js?v=202611061753"></script>
+
+</body>
+</html>

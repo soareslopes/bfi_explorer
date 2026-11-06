@@ -1,0 +1,35 @@
+{
+  "n_municipios": 278,
+  "populacao_2021": 9855909,
+  "investimento_total_eur_2023_2025": 69856563.65,
+  "ciclovias_km_concelho": 1836.3586948544755,
+  "ciclovias_km_area_urbana": 1317.4648870760223,
+  "municipios_com_bikesharing": 99,
+  "series": {
+    "2018_original": {
+      "bfi_media": 2.2926544103852713,
+      "c1_declive": 5.327018103308006,
+      "c2_ambcon": 3.456841154318797,
+      "c3_infraest": 0.6221405138979024,
+      "c4_compolit": 0.2760512193647502,
+      "c5_utiliza": 1.7307102480949543
+    },
+    "2018_metodo2025": {
+      "bfi_media": 1.9287166717238209,
+      "c1_declive": 5.327018103308006,
+      "c2_ambcon": 3.356509757706415,
+      "c3_infraest": 0.6221405138979024,
+      "c4_compolit": 0.2760512193647502,
+      "c5_utiliza": 1.7307102480949543
+    },
+    "2025": {
+      "bfi_media": 2.029191021663923,
+      "c1_declive": 4.692510844356875,
+      "c2_ambcon": 3.177308703494522,
+      "c3_infraest": 0.9965299158913115,
+      "c4_compolit": 0.39447799888567237,
+      "c5_utiliza": 2.1879234130232135,
+      "bfi_media_ponderada_pop": 2.7003747621514993
+    }
+  }
+}
