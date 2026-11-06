@@ -1,10 +1,23 @@
 # -*- coding: utf-8 -*-
 """Layout partilhado bilingue: cabecalho, navegacao, alternador de lingua, rodape."""
+import hashlib
 import os
-import time
 
-# marca de versao para evitar cache de CSS/JS depois de cada geracao
-V = "?v=" + time.strftime("%Y%m%d%H%M")
+# Marca de versao para evitar que o browser sirva CSS/JS em cache depois de
+# uma geracao. Depende do conteudo dos assets, nao da hora: gerar duas vezes
+# sem alterar nada produz exactamente o mesmo site.
+def _versao():
+    base = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'assets')
+    h = hashlib.md5()
+    for pasta, _, ficheiros in sorted(os.walk(base)):
+        for f in sorted(ficheiros):
+            if f.endswith(('.css', '.js')):
+                with open(os.path.join(pasta, f), 'rb') as fh:
+                    h.update(f.encode()); h.update(fh.read())
+    return h.hexdigest()[:8]
+
+
+V = "?v=" + _versao()
 
 # Endereco onde o site fica publicado, usado nos canonical e hreflang.
 # Mudar aqui, ou definir BFI_BASE_URL antes de correr a geracao:

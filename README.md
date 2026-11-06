@@ -103,6 +103,26 @@ Sem `dark`, os mosaicos claros são invertidos por filtro CSS em modo escuro.
 A atribuição ao fornecedor é obrigatória e aparece no canto inferior esquerdo
 do mapa.
 
+## Publicar
+
+```bash
+./_build/publicar.sh
+```
+
+Gera o site, clona o repositório para uma pasta temporária, copia tudo por cima
+e mostra o que mudaria, sem enviar nada. Para publicar mesmo:
+
+```bash
+./_build/publicar.sh --enviar "o que mudou"
+```
+
+A pasta `explorador-v1/` do repositório nunca é tocada: é o arquivo da versão
+anterior e vive só lá, não neste projecto. A marca de versão dos assets depende
+do conteúdo, por isso gerar duas vezes sem alterar nada produz exactamente o
+mesmo site e o script diz que não há nada a publicar.
+
+O GitHub Pages leva cerca de um minuto a reconstruir.
+
 ## Regenerar
 
 Depois de mudar os dados em `_novo_site/dados_site/`:
