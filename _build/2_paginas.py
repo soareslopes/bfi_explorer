@@ -1377,17 +1377,17 @@ def pg_metodologia():
     for d in DIMS:
         itens = grupos.get(d['k'], [])
         linhas = ''.join(
-          '<tr><td class="num">%s</td><td>%s</td><td class="muted small">%s</td><td class="n">%d%%</td></tr>'
-          % (x['k'], T(x['nome']), T(x['un']), round(x['peso'] * 100)) for x in itens)
+          '<tr><td class="num">%s</td><td>%s</td><td class="muted small">%s</td></tr>'
+          % (x['k'], T(x['nome']), T(x['un'])) for x in itens)
         gl.append(
           '<h3>%s %s <span class="muted" style="font-weight:400">· %d%% %s · %d %s</span></h3>'
           '<p class="muted">%s</p>'
           '<table><thead><tr><th>%s</th><th>%s</th><th>%s</th>'
-          '<th style="text-align:right">%s</th></tr></thead><tbody>%s</tbody></table>'
+          '</tr></thead><tbody>%s</tbody></table>'
           % (d['cod'], T(d['nome']), round(d['peso'] * 100),
              L('do índice', 'of the index'), len(itens), L('indicadores', 'indicators'),
              T(d['desc']), L('Código', 'Code'), L('Indicador', 'Indicator'),
-             L('Unidade', 'Unit'), L('Peso na dimensão', 'Weight in dimension'), linhas))
+             L('Unidade', 'Unit'), linhas))
 
     fontes = [
       ('INE, Censos e BGRI' if LANG == 'pt' else 'Statistics Portugal, Census and BGRI',
@@ -1458,44 +1458,34 @@ def pg_metodologia():
       <tbody>''' + pesos + '''</tbody></table>
 
       <h2>''' + L('Normalização', 'Normalisation') + '''</h2>
-      <p>''' + L('Em 2025 convivem três regimes de normalização, consoante a natureza de cada indicador:',
-                 'The 2025 edition uses three normalisation regimes, depending on the nature of each indicator:') + '''</p>
-      <ul>
-        <li>''' + L(
-          '<strong>Benchmark pelo máximo observado.</strong> Infraestruturas, compromisso '
-          'político e utilização. O melhor município do país define o 10 e todos os outros são '
-          'medidos contra ele.',
-          '<strong>Benchmark against the observed maximum.</strong> Infrastructure, political '
-          'commitment and cycling levels. The best municipality in the country sets the 10 and '
-          'everyone else is measured against it.') + '''</li>
-        <li>''' + L(
-          '<strong>Limiares normativos com tecto.</strong> As quatro densidades. Acima de 3000 '
-          'hab/km² em área urbana, 1000 hab/km² no concelho, 1200 e 400 alojamentos por km² '
-          'respectivamente, considera-se que já não há ganho adicional para a mobilidade ciclável.',
-          '<strong>Capped normative thresholds.</strong> The four density indicators. Above '
-          '3,000 people/km² in the urban area, 1,000 people/km² across the municipality, and '
-          '1,200 and 400 dwellings/km² respectively, further density is taken to add nothing '
-          'more for cycling.') + '''</li>
-        <li>''' + L(
-          '<strong>Min-Max.</strong> Os restantes indicadores de declive e ambiente construído, '
-          'para os quais não existe referencial externo. O indicador de comprimento médio de '
-          'bloco é invertido, porque blocos mais curtos favorecem a bicicleta.',
-          '<strong>Min-max.</strong> The remaining slope and built environment indicators, for '
-          'which no external benchmark exists. The average block length indicator is inverted, '
-          'because shorter blocks favour cycling.') + '''</li>
-      </ul>
+      <p>''' + L(
+        'Indicadores com unidades tão diferentes (quilómetros, euros, percentagens, habitantes '
+        'por km²) só se combinam depois de levados para a mesma escala de 0 a 10. A escolha da '
+        'régua é feita indicador a indicador, conforme o que ele mede: uns são medidos contra o '
+        'melhor resultado do país, noutros existe um patamar a partir do qual mais não acrescenta '
+        'à mobilidade ciclável, e noutros ainda usa-se a amplitude observada entre municípios. '
+        'Sempre que um valor mais baixo é melhor, a escala é invertida.',
+        'Indicators in very different units (kilometres, euros, percentages, people per km²) '
+        'can only be combined once brought onto the same 0 to 10 scale. The yardstick is chosen '
+        'indicator by indicator, according to what it measures: some are measured against the '
+        'best result in the country, some have a level beyond which more adds nothing for '
+        'cycling, and others use the range observed across municipalities. Where a lower value '
+        'is better, the scale is inverted.') + '''</p>
+      <p>''' + L(
+        'Os parâmetros exactos desta etapa não são publicados. Os valores medidos de cada '
+        'indicador e os resultados finais por dimensão são abertos.',
+        'The exact parameters of this step are not published. The measured values of each '
+        'indicator and the final results by dimension are open.') + '''</p>
 
       <h2>''' + L('Os vinte e cinco indicadores', 'The twenty-five indicators') + '''</h2>
       ''' + ''.join(gl) + '''
 
       <h2>''' + L('Fontes', 'Sources') + '''</h2>
       <p>''' + L(
-        'Só foram usados dados abertos, por três razões: garantir acesso sem restrições '
-        'proprietárias, permitir correcção e complemento das bases por qualquer pessoa, e '
-        'assegurar que o método é replicável noutros contextos.',
-        'Only open data was used, for three reasons: to guarantee access without proprietary '
-        'restrictions, to let anyone correct and extend the underlying datasets, and to make '
-        'the method replicable elsewhere.') + '''</p>
+        'Só foram usados dados abertos, por duas razões: garantir acesso sem restrições '
+        'proprietárias e permitir que qualquer pessoa corrija e complemente as bases de partida.',
+        'Only open data was used, for two reasons: to guarantee access without proprietary '
+        'restrictions and to let anyone correct and extend the underlying datasets.') + '''</p>
       <table><thead><tr><th>''' + L('Fonte', 'Source') + '''</th>
       <th>''' + L('O que fornece', 'What it provides') + '''</th>
       <th>''' + L('Edição 2018', '2018 edition') + '''</th>
@@ -1620,10 +1610,9 @@ def pg_dados():
         <p class="eyebrow">''' + L('Tabelas', 'Tables') + '''</p>
         <h3>''' + L('Indicadores detalhados', 'Detailed indicators') + '''</h3>
         <p class="small muted">''' + L(
-          'Os 25 indicadores por município, em valor bruto e normalizado, para 2025 e 2018, '
-          'com o peso de cada um na sua dimensão.',
-          'All 25 indicators per municipality, raw and normalised, for 2025 and 2018, with each '
-          'one’s weight inside its dimension.') + '''</p>
+          'Os 25 indicadores por município, com o valor medido em 2025 e a posição no país.',
+          'All 25 indicators per municipality, with the value measured in 2025 and the position '
+          'in Portugal.') + '''</p>
         <div class="btn-row" style="margin-top:14px">
           <a class="btn ghost" href="''' + up + '''dados/bfi_indicadores.csv" download>bfi_indicadores.csv</a>
         </div>
@@ -1667,19 +1656,17 @@ def pg_dados():
       'and <code>bfi</code> are on the 0 to 10 scale.</p>')) + '''
 
     <div class="card" style="margin-top:4px">
-      <p class="eyebrow">''' + L('Reprodutibilidade', 'Reproducibility') + '''</p>
-      <h3>''' + L('Como estes ficheiros foram gerados', 'How these files were produced') + '''</h3>
+      <p class="eyebrow">''' + L('Acesso e uso', 'Access and use') + '''</p>
+      <h3>''' + L('O que está e o que não está publicado', 'What is and is not published') + '''</h3>
       <p class="small muted">''' + L(
-        'O pipeline completo, do processamento SIG ao apuramento final, está em Python. Os '
-        'ficheiros publicados aqui são produzidos por <code>build_dados_site.py</code> a partir '
-        'dos resultados do pipeline, sem intervenção manual.',
-        'The full pipeline, from GIS processing to the final tally, is in Python. The files '
-        'published here are produced by <code>build_dados_site.py</code> from the pipeline '
-        'output, with no manual step.') + '''</p>
-      <div class="btn-row" style="margin-top:14px">
-        <a class="btn ghost" href="https://github.com/soareslopes/bfi_explorer" target="_blank" rel="noopener">''' + L(
-          'Repositório no GitHub', 'GitHub repository') + '''</a>
-      </div>
+        'Estão publicados os resultados finais (BFI, cinco dimensões e posição), os valores '
+        'medidos de cada indicador e a geografia. Não estão publicados os parâmetros de '
+        'normalização nem os pesos dos indicadores dentro de cada dimensão. Para trabalho de '
+        'investigação que precise da especificação completa, contacte a equipa do projecto.',
+        'Published here are the final results (BFI, five dimensions and rank), the measured '
+        'values of each indicator and the geography. The normalisation parameters and the weights '
+        'of indicators inside each dimension are not published. For research that needs the '
+        'full specification, contact the project team.') + '''</p>
     </div>
   </div>
 </section>
@@ -1842,19 +1829,18 @@ def ficha(m, ordem):
         grupos.setdefault(x['dim'], []).append(x)
     irows = []
     for d in DIMS:
-        irows.append('<tr><td colspan="5" style="background:var(--surface-2);font-weight:650;'
+        irows.append('<tr><td colspan="4" style="background:var(--surface-2);font-weight:650;'
                      'font-size:.82rem;letter-spacing:.03em">%s %s</td></tr>'
                      % (d['cod'], T(d['nome']).upper()))
         for x in grupos.get(d['k'], []):
-            raw, nr25, _ = m['ind'].get(x['k'], [None, None, None])
-            contrib = (nr25 or 0) * x['peso'] * 10
+            raw, pos = m['ind'].get(x['k'], [None, None])
+            frac = (1 - (pos - 1) / 277.0) if pos else 0
             irows.append(
               '<tr><td class="num small">%s</td><td>%s <span class="small muted">%s</span></td>'
-              '<td class="n">%s</td><td class="n">%s</td><td class="n cellbar">'
+              '<td class="n">%s</td><td class="n cellbar">'
               '<i style="width:%.0f%%;background:var(--seq-250)"></i><span>%s</span></td></tr>'
               % (x['k'], T(x['nome']), T(x['un']), fmt_ind(raw, x['fmt']),
-                 n(nr25 * 10, 1) if nr25 is not None else '-',
-                 max(2, min(100, (nr25 or 0) * 100)), n(contrib, 2)))
+                 max(2, min(100, frac * 100)), ordinal(pos) if pos else '-'))
 
     viz_rows = ''.join(
       '<tr%s><td class="n">%d</td><td class="nm"><a href="%s.html">%s</a></td>'
@@ -1935,32 +1921,31 @@ def ficha(m, ordem):
 
 <section class="tight">
   <div class="wrap">
-    <div class="grid-2" style="grid-template-columns:1fr 340px;align-items:start">
-      <div class="card card-pad-0">
+    <div class="grid-2" style="grid-template-columns:1fr 340px">
+      <div class="ficha-det"><div class="card card-pad-0">
         <div style="padding:22px 22px 0">
           <p class="eyebrow">''' + L('Detalhe', 'Detail') + '''</p>
           <h3>''' + L('Os vinte e cinco indicadores', 'The twenty-five indicators') + '''</h3>
           <p class="small muted">''' + L(
-            'O valor normalizado está na escala de 0 a 10. O contributo é o que o indicador '
-            'acrescenta à sua dimensão, já com o peso aplicado.',
-            'The normalised value is on the 0 to 10 scale. The contribution is what the '
-            'indicator adds to its dimension, with its weight already applied.') + '''</p>
+            'O valor medido e a posição do município entre os 278, em cada indicador '
+            '(1.º é o melhor).',
+            'The measured value and the municipality’s position among the 278, on each '
+            'indicator (1st is best).') + '''</p>
         </div>
-        <div class="tbl-wrap" style="border:0;border-radius:0;max-height:620px;overflow-y:auto">
+        <div class="tbl-wrap" style="border:0;border-radius:0">
           <table class="tbl"><thead><tr><th>''' + L('Cód.', 'Code') + '''</th>
           <th>''' + L('Indicador', 'Indicator') + '''</th>
           <th style="text-align:right">''' + L('Valor', 'Value') + '''</th>
-          <th style="text-align:right">''' + L('Normalizado', 'Normalised') + '''</th>
-          <th style="text-align:right">''' + L('Contributo', 'Contribution') + '''</th></tr></thead>
+          <th style="text-align:right">''' + L('Posição no país', 'Position in Portugal') + '''</th></tr></thead>
           <tbody>''' + ''.join(irows) + '''</tbody></table>
         </div>
-      </div>
-      <div>
+      </div></div>
+      <div class="ficha-side">
         <div class="card">
           <p class="eyebrow">''' + L('Localização', 'Location') + '''</p>
           <div class="mapbox" id="miniMapa" style="border:0;max-width:200px;margin-inline:auto"></div>
         </div>
-        <div class="card card-pad-0" style="margin-top:16px">
+        <div class="card card-pad-0">
           <div style="padding:20px 20px 0"><p class="eyebrow">''' + L('Vizinhança', 'Neighbourhood') + '''</p>
           <h3>''' + L('Distrito de ' + m['dist'], m['dist'] + ' district') + '''</h3></div>
           <div class="tbl-wrap" style="border:0;border-radius:0;max-height:330px;overflow-y:auto">

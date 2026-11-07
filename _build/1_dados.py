@@ -34,7 +34,7 @@ def r(x, n=3):
 DIMS = [{'k': d['k'], 'cod': d['cod'], 'peso': d['peso'],
          'nome': d['nome'], 'curto': d['curto'], 'desc': d['desc']} for d in i18n.DIMS]
 
-IND = [{'k': k, 'dim': dim, 'peso': p,
+IND = [{'k': k, 'dim': dim,
         'nome': {'pt': npt, 'en': nen}, 'un': {'pt': upt, 'en': uen}, 'fmt': fmt}
        for k, dim, p, npt, nen, upt, uen, fmt in i18n.IND]
 
@@ -86,10 +86,29 @@ for d in sorted(by):
       's18c': serie(d, ('2018', 'metodo_2025')),
     }
     ii = ind_by.get(d, {})
-    m['ind'] = {k: [r(ii.get(k, {}).get('bruto_2025'), 4),
-                    r(ii.get(k, {}).get('norm_2025'), 4),
-                    r(ii.get(k, {}).get('norm_2018'), 4)] for k in IND_CODES}
+    m['ind'] = {k: [r(ii.get(k, {}).get('bruto_2025'), 4), None] for k in IND_CODES}
     municipios.append(m)
+
+# Posicao de cada municipio em cada indicador (1 = melhor). So o valor bruto e a
+# ordem entram no site: a normalizacao e os pesos dos indicadores ficam fora.
+# AMB9 (comprimento medio de bloco) conta ao contrario: bloco mais curto e melhor.
+INVERTIDOS = {'AMB9'}
+for k in IND_CODES:
+    com = [(m['ind'][k][0], m) for m in municipios if m['ind'][k][0] is not None]
+    com.sort(key=lambda t: t[0], reverse=(k not in INVERTIDOS))
+    pos, ant = 0, None
+    for j, (v, m) in enumerate(com, 1):
+        if v != ant:
+            pos, ant = j, v
+        m['ind'][k][1] = pos
+
+# ficheiro de indicadores para download: valores brutos apenas
+with open(os.path.join(SITE, 'dados', 'bfi_indicadores.csv'), 'w', newline='', encoding='utf8') as fh:
+    w = csv.writer(fh)
+    w.writerow(['dtmn', 'municipio', 'indicador', 'valor_2025', 'posicao_2025'])
+    for m in municipios:
+        for k in IND_CODES:
+            w.writerow([m['d'], m['n'], k, m['ind'][k][0], m['ind'][k][1]])
 
 # vizinhos por distrito (para a comparacao na ficha)
 for m in municipios:

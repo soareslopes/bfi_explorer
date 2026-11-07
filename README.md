@@ -133,7 +133,7 @@ python3 _build/1_dados.py && python3 _build/2_paginas.py
 
 `1_dados.py` escreve `assets/js/data.js`, `assets/js/geo.js` e `assets/js/i18n.js`.
 `2_paginas.py` escreve todas as páginas HTML nas duas línguas, fichas incluídas.
-Os ficheiros de `dados/` são cópias dos de `_novo_site/dados_site/` para download.
+Os ficheiros de `dados/` são cópias dos de `_novo_site/dados_site/` para download, excepto `bfi_indicadores.csv`, que `1_dados.py` gera só com valores medidos e posição (sem normalização nem pesos).
 
 ## Estrutura
 

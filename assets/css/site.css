@@ -652,3 +652,17 @@ table.tbl td.nm.one { white-space: nowrap; max-width: 210px; overflow: hidden; t
 .alertpop.neutral > svg { width: 13px; height: 13px; }
 /* dentro de um cartao o icone recua para nao colar ao canto */
 .card.alertzone > .alertpop { right: 14px; top: 14px; }
+
+/* ---------------- ficha: detalhe com a altura da coluna da direita ---------------- */
+/* o cartao do detalhe e absoluto, por isso nao conta para a altura da linha da
+   grelha: quem a define e a coluna da direita (mapa + vizinhanca), e o detalhe
+   estica ate la, com a tabela a rolar dentro do espaco que sobra */
+.ficha-det { position: relative; min-height: 460px; }
+.ficha-det > .card { position: absolute; inset: 0; display: flex; flex-direction: column; }
+.ficha-det .tbl-wrap { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+.ficha-side { display: flex; flex-direction: column; gap: 16px; }
+@media (max-width: 860px) {
+  .ficha-det { min-height: 0; }
+  .ficha-det > .card { position: static; display: block; }
+  .ficha-det .tbl-wrap { max-height: 620px; }
+}
