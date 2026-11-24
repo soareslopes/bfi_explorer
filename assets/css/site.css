@@ -435,6 +435,12 @@ footer.ft { background: var(--surface-1); border-top: 1px solid var(--line); pad
   body { background: #fff; }
   .card, .tile, .kv > div { box-shadow: none; }
   .card, .tile, .mcard, tr { break-inside: avoid; }
+  /* tabelas largas cabem na pagina e imprimem-se por inteiro, sem barra de rolagem */
+  .tbl-wrap { overflow: visible !important; max-height: none !important; }
+  table.tbl { font-size: 7.5pt; }
+  table.tbl th, table.tbl td { padding: 3px 5px; }
+  .cellbar { min-width: 0; padding: 3px 5px !important; }
+  table.tbl thead th { position: static; }
   .print-head {
     display: flex; height: 14mm; align-items: center; justify-content: space-between;
     border-bottom: 1px solid #b9b7ae; margin-bottom: 5mm; font: 600 9pt var(--font-sans); color: #333;
