@@ -46,6 +46,8 @@ def i(v):
 
 def sign(v, d=2):
     if v is None: return '-'
+    if abs(v) < 0.5 * 10 ** (-d):        # arredonda para zero: sem sinal
+        return n(abs(v), d)
     return ('+' if v > 0 else '') + n(v, d)
 
 def eur(v):
@@ -1060,12 +1062,13 @@ def pg_municipios():
       var dv = m.s18c ? m.s25.bfi-m.s18c.bfi : null;
       var dcls = dv===null ? 'flat' : (dv>0.05?'up':(dv<-0.05?'down':'flat'));
       frag.appendChild(h('a',{class:'mcard', href:'%(md)s'+m.slug+'.html'},
-        '<span class="rank">'+m.s25.rank+'%(ord)s</span>'+
-        '<div class="nm">'+esc(m.n)+'</div>'+
-        '<div class="ds">'+esc(m.dist)+(m.cap?' · '+T.capital:'')+'</div>'+
-        '<div class="sc"><b>'+F.n(m.s25.bfi,2)+'</b><i>BFI 2025</i>'+
-        (dv===null?'':'<span class="delta '+dcls+'" style="margin-left:auto">'+F.sign(dv,2)+'<small>vs 2018</small></span>')+'</div>'+
-        '<div class="mini">'+miniRadar(m.s25, MEDIA.s25)+'</div>'));
+        '<div class="top"><div><div class="nm">'+esc(m.n)+'</div>'+
+        '<div class="ds">'+esc(m.dist)+(m.cap?' · '+T.capital:'')+'</div></div>'+
+        '<span class="rank">'+m.s25.rank+'%(ord)s</span></div>'+
+        '<div class="body"><div><div class="lbl">BFI 2025</div>'+
+        '<b class="big">'+F.n(m.s25.bfi,2)+'</b>'+
+        (dv===null?'':'<div class="dl delta '+dcls+'">'+F.sign(dv,2)+'<small>vs 2018</small></div>')+'</div>'+
+        '<div class="rd">'+miniRadar(m.s25, MEDIA.s25)+'</div></div>'));
     });
     cards.appendChild(frag);
   }

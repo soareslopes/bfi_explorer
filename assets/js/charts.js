@@ -334,7 +334,7 @@
       grid += '<line x1="50" y1="50" x2="' + pt(i, 10).split(',')[0] + '" y2="' + pt(i, 10).split(',')[1] +
               '" style="stroke:var(--line);stroke-width:1"/>';
     }
-    return '<svg viewBox="0 0 100 100" class="radarmini" aria-hidden="true">' + grid +
+    return '<svg viewBox="7 7 86 86" class="radarmini" aria-hidden="true">' + grid +
       (ref ? '<polygon points="' + poly(ref) + '" style="fill:none;stroke:var(--ink-3);stroke-width:1.2;stroke-dasharray:3 2"/>' : '') +
       '<polygon points="' + poly(s) + '" style="fill:var(--series-1);fill-opacity:.2;stroke:var(--series-1);stroke-width:1.8;stroke-linejoin:round"/></svg>';
   };

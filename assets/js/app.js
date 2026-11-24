@@ -53,8 +53,11 @@
     },
     pct: function (v, d) { return F.n(v * 100, d === undefined ? 1 : d) + '%'; },
     sign: function (v, d) {
-      var s = F.n(Math.abs(v), d === undefined ? 2 : d);
-      return (v > 0 ? '+' : v < 0 ? '-' : '') + s;
+      var dd = d === undefined ? 2 : d;
+      var s = F.n(Math.abs(v), dd);
+      /* -0,00 e confuso: o que arredonda para zero fica sem sinal */
+      if (Math.abs(v) < 0.5 * Math.pow(10, -dd)) return s;
+      return (v > 0 ? '+' : '-') + s;
     }
   };
 
