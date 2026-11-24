@@ -18,23 +18,6 @@ Publicado por GitHub Pages a partir da raiz do ramo `main`.
 | `assets/` | Folha de estilo e JavaScript |
 | `dados/` | Ficheiros para download, em CSV, GeoJSON e JSON |
 | `_build/` | Os geradores que produzem o site |
-| `explorador-v1/` | A versão anterior do explorador, arquivada |
-
-### Explorador anterior
-
-A versão que estava publicada até agora continua acessível em
-[`explorador-v1/`](explorador-v1/), tal como foi publicada, e está ligada a partir
-do rodapé e da página do explorador. O ficheiro `concelhos_bfi_2018.geojson` que
-acompanhava essa versão foi renomeado para `concelhos_bfi_2025_rascunho.geojson`:
-apesar do nome antigo, não continha os resultados de 2018 mas sim um apuramento
-intermédio de 2025, e já não era usado pelo `config.json`.
-
----
-
-Site estático do Bike Friendly Index, gerado a partir dos dados em
-`_novo_site/dados_site/`. Não precisa de servidor para funcionar: todos os dados
-são carregados por `<script src>` e não por `fetch`, por isso abre directamente
-do disco.
 
 ## Abrir
 
@@ -116,8 +99,8 @@ e mostra o que mudaria, sem enviar nada. Para publicar mesmo:
 ./_build/publicar.sh --enviar "o que mudou"
 ```
 
-A pasta `explorador-v1/` do repositório nunca é tocada: é o arquivo da versão
-anterior e vive só lá, não neste projecto. A marca de versão dos assets depende
+O repositório é público, por isso o script recusa publicar se encontrar na pasta `dados/`
+algo fora dos cinco ficheiros permitidos ou rasto de colunas de detalhe. A marca de versão dos assets depende
 do conteúdo, por isso gerar duas vezes sem alterar nada produz exactamente o
 mesmo site e o script diz que não há nada a publicar.
 

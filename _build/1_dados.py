@@ -36,7 +36,7 @@ DIMS = [{'k': d['k'], 'cod': d['cod'], 'peso': d['peso'],
 
 IND = [{'k': k, 'dim': dim,
         'nome': {'pt': npt, 'en': nen}, 'un': {'pt': upt, 'en': uen}, 'fmt': fmt}
-       for k, dim, p, npt, nen, upt, uen, fmt in i18n.IND]
+       for k, dim, npt, nen, upt, uen, fmt in i18n.IND]
 
 IND_CODES = [x['k'] for x in IND]
 
@@ -48,11 +48,6 @@ for row in rows:
 
 g25 = json.load(open(os.path.join(SRC, 'bfi_2025.geojson'), encoding='utf8'))
 ctx = {f['properties']['dtmn']: f['properties'] for f in g25['features']}
-
-ind_rows = list(csv.DictReader(open(os.path.join(SRC, 'bfi_indicadores.csv'), encoding='utf8')))
-ind_by = {}
-for row in ind_rows:
-    ind_by.setdefault(row['dtmn'], {})[row['indicador']] = row
 
 nacional = json.load(open(os.path.join(SRC, 'portugal.json'), encoding='utf8'))
 
@@ -85,30 +80,7 @@ for d in sorted(by):
       's18': serie(d, ('2018', 'original_2018')),
       's18c': serie(d, ('2018', 'metodo_2025')),
     }
-    ii = ind_by.get(d, {})
-    m['ind'] = {k: [r(ii.get(k, {}).get('bruto_2025'), 4), None] for k in IND_CODES}
     municipios.append(m)
-
-# Posicao de cada municipio em cada indicador (1 = melhor). So o valor bruto e a
-# ordem entram no site: a normalizacao e os pesos dos indicadores ficam fora.
-# AMB9 (comprimento medio de bloco) conta ao contrario: bloco mais curto e melhor.
-INVERTIDOS = {'AMB9'}
-for k in IND_CODES:
-    com = [(m['ind'][k][0], m) for m in municipios if m['ind'][k][0] is not None]
-    com.sort(key=lambda t: t[0], reverse=(k not in INVERTIDOS))
-    pos, ant = 0, None
-    for j, (v, m) in enumerate(com, 1):
-        if v != ant:
-            pos, ant = j, v
-        m['ind'][k][1] = pos
-
-# ficheiro de indicadores para download: valores brutos apenas
-with open(os.path.join(SITE, 'dados', 'bfi_indicadores.csv'), 'w', newline='', encoding='utf8') as fh:
-    w = csv.writer(fh)
-    w.writerow(['dtmn', 'municipio', 'indicador', 'valor_2025', 'posicao_2025'])
-    for m in municipios:
-        for k in IND_CODES:
-            w.writerow([m['d'], m['n'], k, m['ind'][k][0], m['ind'][k][1]])
 
 # vizinhos por distrito (para a comparacao na ficha)
 for m in municipios:
@@ -175,3 +147,30 @@ with open(os.path.join(JS, 'geo.js'), 'w', encoding='utf8') as fh:
 
 print('data.js  ', os.path.getsize(os.path.join(JS, 'data.js')) // 1024, 'KB,', len(municipios), 'municipios')
 print('geo.js   ', os.path.getsize(os.path.join(JS, 'geo.js')) // 1024, 'KB')
+
+# ---------------- ficheiros publicos para descarregar ----------------
+# So sai o que a equipa decidiu publicar: BFI, as cinco componentes e a posicao.
+# Os indicadores, os valores medidos e tudo o que os reproduz ficam em dados_site/,
+# apenas na copia local, e nunca vao para a pasta publica dados/.
+import shutil
+PUB = os.path.join(SITE, 'dados')
+os.makedirs(PUB, exist_ok=True)
+for f in os.listdir(PUB):                       # nada do que la estava sobrevive
+    os.remove(os.path.join(PUB, f))
+
+shutil.copyfile(os.path.join(SRC, 'bfi_municipios.csv'), os.path.join(PUB, 'bfi_municipios.csv'))
+
+PERMITIDAS = ['dtmn', 'municipio', 'ano', 'serie', 'c1_declive', 'c2_ambcon', 'c3_infraest',
+              'c4_compolit', 'c5_utiliza', 'bfi', 'ranking']
+for nome in ['bfi_2025.geojson', 'bfi_2018_original.geojson', 'bfi_2018_metodo2025.geojson']:
+    g = json.load(open(os.path.join(SRC, nome), encoding='utf8'))
+    for f in g['features']:
+        f['properties'] = {k: f['properties'][k] for k in PERMITIDAS if k in f['properties']}
+    with open(os.path.join(PUB, nome), 'w', encoding='utf8') as fh:
+        json.dump(g, fh, ensure_ascii=False, separators=(',', ':'))
+
+pub_nac = {'n_municipios': nacional['n_municipios'], 'populacao_2021': nacional['populacao_2021'],
+           'series': nacional['series']}
+with open(os.path.join(PUB, 'portugal.json'), 'w', encoding='utf8') as fh:
+    json.dump(pub_nac, fh, ensure_ascii=False, indent=2)
+print('dados/   ', ', '.join(sorted(os.listdir(PUB))))

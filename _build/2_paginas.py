@@ -65,10 +65,6 @@ def MD():
     return MUN_DIR[LANG] + '/'
 
 
-def LEGACY():
-    """Caminho para o explorador arquivado, a partir da raiz da lingua activa."""
-    return ('../' if LANG == 'en' else '') + 'explorador-v1/'
-
 def write(path, html):
     p = os.path.join(SITE, path)
     os.makedirs(os.path.dirname(p) or SITE, exist_ok=True)
@@ -220,9 +216,10 @@ def pg_index():
         <div id="dimNac"></div>
         <p class="small muted" style="margin:16px 0 0">''' + L(
           'Compromisso político e infraestruturas continuam a ser as dimensões mais fracas, '
-          'tal como em 2018. São também as duas que mais subiram desde então.',
+          'tal como em 2018. As que mais subiram desde então são a utilização da bicicleta e as '
+          'infraestruturas.',
           'Political commitment and infrastructure remain the weakest dimensions, just as in '
-          '2018. They are also the two that have risen the most since.') + '''</p>
+          '2018. The ones that have risen the most since are cycling levels and infrastructure.') + '''</p>
       </div>
       <div class="card fill">
         <p class="eyebrow">''' + L('Como se distribuem', 'How they are spread') + '''</p>
@@ -284,7 +281,7 @@ def pg_index():
     var nac = MEDIA.s25, out = '';
     M.dims.forEach(function(d,ix){
       var k = ['c1','c2','c3','c4','c5'][ix], v = nac[k];
-      out += '<div class="dimrow"><div class="lab"><b>'+d.cod+' '+d.nome+'</b></div>'+
+      out += '<div class="dimrow"><div class="lab"><b>'+d.nome+'</b></div>'+
         '<div class="track"><i class="fill" style="width:'+(v/10*100).toFixed(1)+'%%;background:'+colorOf('dim',v)+'"></i></div>'+
         '<div class="val">'+F.n(v,2)+'</div></div>';
     });
@@ -303,7 +300,7 @@ def pg_index():
   M.dims.forEach(function(d,ix){
     var k = ['c1','c2','c3','c4','c5'][ix], v = MEDIA.s25[k];
     dc.appendChild(h('div',{class:'card'},
-      '<p class="eyebrow" style="margin-bottom:6px">'+d.cod+' · %(weight)s '+Math.round(d.peso*100)+'%%</p>'+
+      '<p class="eyebrow" style="margin-bottom:6px">%(weight)s '+Math.round(d.peso*100)+'%%</p>'+
       '<h3 style="margin-bottom:8px">'+esc(d.nome)+'</h3>'+
       '<p class="small muted">'+esc(d.desc)+'</p>'+
       '<div style="display:flex;align-items:center;gap:8px;margin-top:14px">'+
@@ -346,7 +343,7 @@ def pg_2025():
       '<button type="button" data-k="%s"%s>%s</button>'
       % (k, ' aria-pressed="true"' if k == 'bfi' else '', lab)
       for k, lab in [('bfi', L('BFI total', 'Overall BFI'))] +
-                    [(DIMK[ix], d['cod'] + ' ' + T(d['curto'])) for ix, d in enumerate(DIMS)])
+                    [(DIMK[ix], T(d['nome'])) for ix, d in enumerate(DIMS)])
 
     body = '''
 <section class="tight">
@@ -450,9 +447,7 @@ def pg_2025():
     </div>
     <div class="tbl-wrap">
       <table class="tbl"><thead><tr><th>#</th><th>''' + L('Capital', 'Capital') + '''</th>
-      <th style="text-align:right">BFI</th><th style="text-align:right">C1</th>
-      <th style="text-align:right">C2</th><th style="text-align:right">C3</th>
-      <th style="text-align:right">C4</th><th style="text-align:right">C5</th></tr></thead>
+      <th style="text-align:right">BFI</th>''' + ''.join('<th style="text-align:right">%s</th>' % T(d['nome']) for d in DIMS) + '''</tr></thead>
       <tbody>''' + cap_rows + '''</tbody></table>
     </div>
   </div>
@@ -479,7 +474,7 @@ def pg_2025():
   var dim = document.getElementById('dim25');
   var campo = 'bfi';
   var NOMES = {bfi:'%(total)s'};
-  M.dims.forEach(function(d,ix){ NOMES[['c1','c2','c3','c4','c5'][ix]] = d.cod+' '+d.nome; });
+  M.dims.forEach(function(d,ix){ NOMES[['c1','c2','c3','c4','c5'][ix]] = d.nome; });
 
   function drawHist(){
     var vals = M.all.filter(function(m){return m.s25;}).map(function(m){return m.s25[campo];});
@@ -491,7 +486,7 @@ def pg_2025():
     var out = '';
     M.dims.forEach(function(d,ix){
       var k = ['c1','c2','c3','c4','c5'][ix], v = MEDIA.s25[k], v18 = MEDIA.s18c[k];
-      out += '<div class="dimrow"><div class="lab"><b>'+d.cod+' '+d.nome+'</b>%(weight)s '+Math.round(d.peso*100)+'%%</div>'+
+      out += '<div class="dimrow"><div class="lab"><b>'+d.nome+'</b>%(weight)s '+Math.round(d.peso*100)+'%%</div>'+
         '<div class="track"><i class="fill" style="width:'+(v/10*100).toFixed(1)+'%%;background:'+colorOf('dim',v)+'"></i>'+
         '<span class="ref" style="left:'+(v18/10*100).toFixed(1)+'%%" title="2018"></span></div>'+
         '<div class="val">'+F.n(v,2)+'</div></div>';
@@ -685,7 +680,7 @@ def pg_2018():
     var c = cur(), out='';
     M.dims.forEach(function(d,ix){
       var k=['c1','c2','c3','c4','c5'][ix], v=c[k];
-      out += '<div class="dimrow"><div class="lab"><b>'+d.cod+' '+d.nome+'</b></div>'+
+      out += '<div class="dimrow"><div class="lab"><b>'+d.nome+'</b></div>'+
         '<div class="track"><i class="fill" style="width:'+(v/10*100).toFixed(1)+'%%;background:'+colorOf('dim',v)+'"></i>'+
         '<span class="ref" style="left:'+(MEDIA.s25[k]/10*100).toFixed(1)+'%%" title="2025"></span></div>'+
         '<div class="val">'+F.n(v,2)+'</div></div>';
@@ -736,16 +731,16 @@ def pg_comparacao():
           for m, d in rows)
 
     dims_tbl = ''.join(
-      '<tr><td><strong>%s</strong> %s</td><td class="n">%s</td><td class="n">%s</td>'
+      '<tr><td><strong>%s</strong></td><td class="n">%s</td><td class="n">%s</td>'
       '<td class="n">%s</td><td class="n"><span class="delta %s">%s</span></td></tr>'
-      % (d['cod'], T(d['nome']), n(S18[k]), n(S18C[k]), n(S25[k]),
+      % (T(d['nome']), n(S18[k]), n(S18C[k]), n(S25[k]),
          'up' if S25[k] - S18C[k] > 0 else 'down', sign(S25[k] - S18C[k]))
       for d, k in zip(DIMS, DIMFULL))
 
     segs = ''.join('<button type="button" data-k="%s"%s>%s</button>'
                    % (k, ' aria-pressed="true"' if k == 'bfi' else '', lab)
                    for k, lab in [('bfi', L('BFI total', 'Overall BFI'))] +
-                                 [(DIMK[ix], d['cod']) for ix, d in enumerate(DIMS)])
+                                 [(DIMK[ix], T(d['nome'])) for ix, d in enumerate(DIMS)])
 
     body = '''
 <section class="tight">
@@ -758,7 +753,8 @@ def pg_comparacao():
         'entre elas não mede evolução nenhuma.</p>'
         '<p>Reaplicando os pesos de 2025 aos indicadores de 2018 obtém-se a <strong>série '
         'comparável</strong>: 2018 passa a valer ' + n(S18C['bfi_media']) + ' e 2025 mantém-se em '
-        + n(S25['bfi_media']) + '. É esta a série usada em todo o resto da página.</p>'
+        + n(S25['bfi_media']) + '. É esta a série usada em todo o resto da página. O declive, que é '
+        'uma característica do terreno, tem o mesmo valor nos dois anos.</p>'
         '<p class="small">Ressalva que fica por resolver: este recálculo corrige os pesos, não '
         'corrige a base de normalização. Os indicadores de 2018 continuam normalizados contra os '
         'máximos de 2018 e os de 2025 contra os máximos de 2025. Uma série temporal plenamente '
@@ -770,7 +766,8 @@ def pg_comparacao():
         'between them measures no change at all.</p>'
         '<p>Reapplying the 2025 weights to the 2018 indicators gives the <strong>comparable '
         'series</strong>: 2018 becomes ' + n(S18C['bfi_media']) + ' and 2025 stays at '
-        + n(S25['bfi_media']) + '. That is the series used throughout the rest of this page.</p>'
+        + n(S25['bfi_media']) + '. That is the series used throughout the rest of this page. Slope, '
+        'a property of the terrain, has the same value in both years.</p>'
         '<p class="small">One caveat remains open: this recalculation fixes the weights, not the '
         'normalisation base. The 2018 indicators are still normalised against 2018 maxima and the '
         '2025 ones against 2025 maxima. A fully comparable time series requires renormalising both '
@@ -778,10 +775,10 @@ def pg_comparacao():
       <p class="eyebrow">''' + L('2018 contra 2025', '2018 versus 2025') + '''</p>
       <h1>''' + L('O que mudou em 7 anos', 'What changed in 7 years') + '''</h1>
       <p class="lead" style="max-width:56ch">''' + L(
-        'A comparação parece dizer que Portugal piorou. Não é isso que acontece: a queda é um '
-        'efeito da mudança de metodologia, e a série comparável mostra o contrário.',
-        'The comparison seems to say Portugal got worse. It did not: the fall is an artefact of '
-        'the change in method, and the comparable series shows the opposite.') + '''</p>
+        'Observa-se uma ligeira melhoria entre 2018 e 2025, se bem que muito ténue. As principais '
+        'melhorias registam-se ao nível das infra-estruturas e da utilização da bicicleta.',
+        'A slight improvement is observed between 2018 and 2025, although a very faint one. The '
+        'main improvements are in infrastructure and in cycling levels.') + '''</p>
     </div>
   </div>
 </section>
@@ -807,16 +804,18 @@ def pg_comparacao():
     <div class="grid-2" style="grid-template-columns:1fr 1fr">
       <div class="card fill alertzone">
         ''' + infopop(L(
-          '<p><strong>Infraestruturas e compromisso político são as que mais sobem.</strong> '
-          'São também as duas dimensões que dependem directamente de decisão municipal.</p>'
-          '<p>Ambiente construído e declive descem porque mudaram as fontes de base (Censos '
-          '2021, CAOP 2024, Carta de Ocupação do Solo) e a forma de normalizar, não porque o '
-          'território tenha mudado.</p>',
-          '<p><strong>Infrastructure and political commitment rise the most.</strong> They are '
-          'also the two dimensions that depend directly on municipal decisions.</p>'
-          '<p>Built environment and slope fall because the underlying sources changed (2021 '
-          'Census, CAOP 2024, land cover) along with the normalisation, not because the '
-          'territory changed.</p>')) + '''
+          '<p><strong>Infraestruturas e utilização da bicicleta são as que mais sobem.</strong> '
+          'O compromisso político também sobe, e é, com as infraestruturas, uma das duas '
+          'dimensões que dependem directamente de decisão municipal.</p>'
+          '<p>O declive não varia: o terreno é o mesmo nos dois anos e tem o mesmo valor na '
+          'série comparável. O ambiente construído desce, em parte porque mudaram as fontes de '
+          'base (Censos 2021, CAOP 2024, Carta de Ocupação do Solo) e a forma de normalizar.</p>',
+          '<p><strong>Infrastructure and cycling levels rise the most.</strong> Political '
+          'commitment also rises and, together with infrastructure, is one of the two dimensions '
+          'that depend directly on municipal decisions.</p>'
+          '<p>Slope does not change: the terrain is the same in both years and has the same value '
+          'in the comparable series. Built environment falls, partly because the underlying '
+          'sources changed (2021 Census, CAOP 2024, land cover) along with the normalisation.</p>')) + '''
         <p class="eyebrow">''' + L('Dimensão a dimensão', 'Dimension by dimension') + '''</p>
         <h3>''' + L('Onde houve progresso', 'Where there was progress') + '''</h3>
         <div class="chartslot" id="cmpDims"></div>
@@ -920,7 +919,7 @@ def pg_comparacao():
   var map = choropleth(document.getElementById('mapVar'), {serie:'delta', campo:'bfi', base:'%(md)s'});
   var leg = document.getElementById('legVar');
   var NOMES = {bfi:'%(total)s'};
-  M.dims.forEach(function(d,ix){ NOMES[['c1','c2','c3','c4','c5'][ix]] = d.cod+' '+d.nome; });
+  M.dims.forEach(function(d,ix){ NOMES[['c1','c2','c3','c4','c5'][ix]] = d.nome; });
   function redraw(){
     map.set('campo', campo);
     mapLegend(leg, 'delta', T.bfiChange + (campo==='bfi' ? '' : ' · ' + campo.toUpperCase()),
@@ -946,10 +945,10 @@ def pg_comparacao():
 
   var cd = document.getElementById('cmpDims');
   function drawCmp(){
-    groupedBars(cd, M.dims.map(function(d){ return d.cod+' '+d.curto; }),
+    groupedBars(cd, M.dims.map(function(d){ return d.nome; }),
       [{name:'2018 %(cs)s', v:['c1','c2','c3','c4','c5'].map(function(k){return MEDIA.s18c[k];})},
        {name:'2025', v:['c1','c2','c3','c4','c5'].map(function(k){return MEDIA.s25[k];})}],
-      {max:7, width:460, height:330, fontSize:12.5, directLabels:false});
+      {max:7, width:500, height:350, fontSize:13, left:38, right:6, directLabels:false});
   }
   drawCmp(); cd._redraw = drawCmp; cd.setAttribute('data-redraw','1');
 })();
@@ -975,9 +974,9 @@ def pg_municipios():
     <h1 style="max-width:16ch">''' + L('Cartões por município', 'A card for every municipality') + '''</h1>
     <p class="lead" style="max-width:60ch">''' + L(
       'Uma ficha para cada município de Portugal Continental: score, posição, perfil nas cinco '
-      'dimensões, os vinte e cinco indicadores em bruto e a evolução desde 2018.',
+      'dimensões e a evolução desde 2018.',
       'One card per mainland Portuguese municipality: score, rank, profile across the five '
-      'dimensions, all twenty-five raw indicators and the change since 2018.') + '''</p>
+      'dimensions and the change since 2018.') + '''</p>
   </div>
 </section>
 
@@ -1004,7 +1003,18 @@ def pg_municipios():
         <button type="button" data-f="bs">''' + L('Com bicicletas partilhadas', 'With bike sharing') + '''</button>
       </div>
     </div>
-    <p class="small muted" id="cnt" style="margin:-4px 0 14px"></p>
+    <p class="small muted" id="cnt" style="margin:-4px 0 6px"></p>
+    <p class="small muted mlegend">''' + L(
+      'Em cada cartão, o <strong>radar</strong> mostra o perfil do município nas cinco dimensões. '
+      'O eixo de cima é o ' + T(DIMS[0]['nome']) + ' e os restantes seguem o sentido dos ponteiros do relógio: ' +
+      ', '.join(T(d['nome']) for d in DIMS[1:-1]) + ' e ' + T(DIMS[-1]['nome']) + '. A linha tracejada é a média '
+      'nacional. O valor a verde ou vermelho é a <strong>variação do BFI desde 2018</strong> (série '
+      'comparável): positivo quer dizer que melhorou, negativo que piorou.',
+      'On each card, the <strong>radar</strong> shows the municipality profile across the five '
+      'dimensions. The top axis is ' + T(DIMS[0]['nome']) + ' and the others run clockwise: ' +
+      ', '.join(T(d['nome']) for d in DIMS[1:-1]) + ' and ' + T(DIMS[-1]['nome']) + '. The dashed line is the '
+      'national average. The green or red value is the <strong>change in BFI since 2018</strong> '
+      '(comparable series): positive means it improved, negative that it got worse.') + '''</p>
     <div class="mcards" id="cards"></div>
     <p id="vazio" class="muted" style="display:none;padding:40px 0;text-align:center">''' + L(
       'Nenhum município corresponde a esta procura.',
@@ -1054,8 +1064,8 @@ def pg_municipios():
         '<div class="nm">'+esc(m.n)+'</div>'+
         '<div class="ds">'+esc(m.dist)+(m.cap?' · '+T.capital:'')+'</div>'+
         '<div class="sc"><b>'+F.n(m.s25.bfi,2)+'</b><i>BFI 2025</i>'+
-        (dv===null?'':'<span class="delta '+dcls+'" style="margin-left:auto">'+F.sign(dv,2)+'</span>')+'</div>'+
-        '<div class="spark" title="C1-C5">'+sparkDims(m.s25)+'</div>'));
+        (dv===null?'':'<span class="delta '+dcls+'" style="margin-left:auto">'+F.sign(dv,2)+'<small>vs 2018</small></span>')+'</div>'+
+        '<div class="mini">'+miniRadar(m.s25, MEDIA.s25)+'</div>'));
     });
     cards.appendChild(frag);
   }
@@ -1086,7 +1096,7 @@ def pg_municipios():
 def pg_explorador():
     opts_campo = ''.join('<option value="%s">%s</option>' % (k, lab)
       for k, lab in [('bfi', L('BFI total', 'Overall BFI'))] +
-                    [(DIMK[ix], d['cod'] + ' ' + T(d['nome'])) for ix, d in enumerate(DIMS)])
+                    [(DIMK[ix], T(d['nome'])) for ix, d in enumerate(DIMS)])
     body = '''
 <section class="tight">
   <div class="wrap">
@@ -1097,11 +1107,6 @@ def pg_explorador():
       'para abrir a ficha completa.',
       'Cross year, series and dimension. Hover the map to read the values, click to open the '
       'full card.') + '''</p>
-    <p class="small muted" style="margin-top:-6px">''' + L(
-      'A versão anterior do explorador continua disponível em '
-      '<a href="' + LEGACY() + '">explorador-v1</a>, tal como foi publicada.',
-      'The previous version of the explorer is still available at '
-      '<a href="' + LEGACY() + '">explorador-v1</a>, exactly as it was published.') + '''</p>
   </div>
 </section>
 
@@ -1117,8 +1122,9 @@ def pg_explorador():
       <div class="field"><label>''' + L('Indicador', 'Indicator') + '''</label>
         <select id="campo">''' + opts_campo + '''</select></div>
       <div class="field"><label>''' + L('Procurar', 'Search') + '''</label>
-        <input type="search" id="busca" placeholder="''' + L('Ir para um município...', 'Jump to a municipality...') + '''"
-               aria-label="''' + L('Procurar município', 'Search municipality') + '''"></div>
+        <input type="search" id="busca" autocomplete="off" placeholder="''' + L('Ir para um município...', 'Jump to a municipality...') + '''"
+               aria-label="''' + L('Procurar município', 'Search municipality') + '''">
+        <div class="sug" id="sug" hidden></div></div>
     </div>
     <div class="explorer">
       <div class="mapbox fullbleed" id="mapa"></div>
@@ -1128,10 +1134,6 @@ def pg_explorador():
       </div>
       <div class="explorer-panels">
         <div class="card" id="painel"></div>
-        <div class="card">
-          <p class="eyebrow">''' + L('Extremos da vista actual', 'Extremes of the current view') + '''</p>
-          <div id="extremos"></div>
-        </div>
       </div>
     </div>
   </div>
@@ -1141,13 +1143,13 @@ def pg_explorador():
 (function(){
   var serie='s25', campo='bfi';
   var host = document.getElementById('mapa');
-  var map = choropleth(host, {serie:serie, campo:campo, link:false, tiles:true,
+  var map = choropleth(host, {serie:serie, campo:campo, link:false, tiles:true, zoom:true,
     par:'xMinYMid meet',
-    onSelect:function(m){ map.set('sel', m.d); painel(m); }});
+    onSelect:function(m){ map.set('sel', m.d); map.focus(m.d); painel(m); }});
   document.getElementById('attrib').textContent = T.attrib;
   var leg = document.getElementById('leg');
   var NOMES = {bfi:'%(total)s'};
-  M.dims.forEach(function(d,ix){ NOMES[['c1','c2','c3','c4','c5'][ix]] = d.cod+' '+d.nome; });
+  M.dims.forEach(function(d,ix){ NOMES[['c1','c2','c3','c4','c5'][ix]] = d.nome; });
   var SNOME = {s25:'BFI 2025', s18c:'%(s18c)s', s18:'%(s18)s', delta:'%(chg)s'};
 
   function val(m){
@@ -1180,38 +1182,49 @@ def pg_explorador():
       [{name:m.n, v:s}, {name:T.natAvg, v:MEDIA.s25, dashed:true}]);
   }
 
-  function extremos(){
-    var rows = M.all.map(function(m){ return {m:m, v:val(m)}; })
-                    .filter(function(r){ return r.v!==null && !isNaN(r.v); })
-                    .sort(function(a,b){ return b.v-a.v; });
-    function blk(t, arr){
-      return '<p class="small" style="font-weight:600;margin:10px 0 6px">'+t+'</p>'+
-        arr.map(function(r){
-          return '<div style="display:flex;justify-content:space-between;gap:10px;padding:3px 0;font-size:.88rem">'+
-          '<a href="%(md)s'+r.m.slug+'.html" style="color:inherit;text-decoration:none">'+esc(r.m.n)+'</a>'+
-          '<span class="num" style="font-weight:600"><b style="display:inline-block;width:9px;height:9px;'+
-          'border-radius:2px;margin-right:6px;background:'+colorOf(map.scaleName(), r.v)+'"></b>'+
-          (serie==='delta'?F.sign(r.v,2):F.n(r.v,2))+'</span></div>';
-        }).join('');
-    }
-    document.getElementById('extremos').innerHTML =
-      blk('%(hi)s', rows.slice(0,5)) + blk('%(lo)s', rows.slice(-5).reverse());
-  }
-
   function redraw(){
     map.set('serie', serie); map.set('campo', campo);
     mapLegend(leg, map.scaleName(), SNOME[serie] + ' · ' + NOMES[campo]);
-    extremos();
   }
   document.getElementById('serie').addEventListener('change', function(){ serie=this.value; redraw(); });
   document.getElementById('campo').addEventListener('change', function(){ campo=this.value; redraw(); });
-  document.getElementById('busca').addEventListener('input', function(){
-    var q=this.value.trim().toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'');
-    if(q.length<3) return;
-    var hit = M.all.filter(function(m){
-      return m.n.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').indexOf(q)===0; })[0];
-    if(hit){ map.set('sel', hit.d); painel(hit); }
+  /* procura: o nome exacto vem primeiro ("Porto" antes de "Porto de Mos"), depois os que
+     comecam pelo texto, depois os que o contem */
+  var busca = document.getElementById('busca'), sug = document.getElementById('sug');
+  function norm(s){ return s.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,''); }
+  function achar(q){
+    var ex=[], pre=[], inc=[];
+    M.all.forEach(function(m){
+      var n=norm(m.n);
+      if(n===q) ex.push(m); else if(n.indexOf(q)===0) pre.push(m); else if(n.indexOf(q)>0) inc.push(m);
+    });
+    return ex.concat(pre, inc);
+  }
+  function escolher(m){
+    map.set('sel', m.d); map.focus(m.d); painel(m);
+    sug.hidden = true; sug.innerHTML = ''; busca.value = m.n;
+  }
+  function mostrar(){
+    var q = norm(busca.value.trim());
+    if(q.length < 2){ sug.hidden = true; sug.innerHTML=''; return []; }
+    var r = achar(q).slice(0, 6);
+    sug.innerHTML = r.length ? '' : '<div class="none">'+T.noMatch+'</div>';
+    r.forEach(function(m, i){
+      var b = document.createElement('button');
+      b.type = 'button'; if(i===0) b.className = 'on';
+      b.innerHTML = esc(m.n)+'<span>'+esc(m.dist)+'</span>';
+      b.addEventListener('mousedown', function(ev){ ev.preventDefault(); escolher(m); });
+      sug.appendChild(b);
+    });
+    sug.hidden = false;
+    return r;
+  }
+  busca.addEventListener('input', mostrar);
+  busca.addEventListener('keydown', function(ev){
+    if(ev.key==='Enter'){ var r = achar(norm(busca.value.trim())); if(r[0]){ ev.preventDefault(); escolher(r[0]); } }
+    if(ev.key==='Escape'){ sug.hidden = true; }
   });
+  busca.addEventListener('blur', function(){ setTimeout(function(){ sug.hidden = true; }, 120); });
   painel(null); redraw();
   host.setAttribute('data-redraw','1');
 })();
@@ -1307,7 +1320,7 @@ def pg_comparar():
     });
 
     groupedBars(document.getElementById('cmpBars'),
-      M.dims.map(function(d){ return d.cod+' '+d.curto; }),
+      M.dims.map(function(d){ return d.nome; }),
       ms.map(function(m){ return {name:m.n, v:['c1','c2','c3','c4','c5'].map(function(k){ return m.s25[k]; })}; }),
       {max:10, height:300});
 
@@ -1367,8 +1380,8 @@ PESOS_2018 = {'C1': '15%', 'C2': '30%', 'C3': '25%', 'C4': '15%', 'C5': '15%'}
 
 def pg_metodologia():
     pesos = ''.join(
-      '<tr><td><strong>%s</strong> %s</td><td class="n">%s</td><td class="n">%d%%</td></tr>'
-      % (d['cod'], T(d['nome']), PESOS_2018[d['cod']], round(d['peso'] * 100)) for d in DIMS)
+      '<tr><td><strong>%s</strong></td><td class="c">%s</td><td class="c">%d%%</td></tr>'
+      % (T(d['nome']), PESOS_2018[d['cod']], round(d['peso'] * 100)) for d in DIMS)
 
     grupos = {}
     for x in IND:
@@ -1380,11 +1393,11 @@ def pg_metodologia():
           '<tr><td class="num">%s</td><td>%s</td><td class="muted small">%s</td></tr>'
           % (x['k'], T(x['nome']), T(x['un'])) for x in itens)
         gl.append(
-          '<h3>%s %s <span class="muted" style="font-weight:400">· %d%% %s · %d %s</span></h3>'
+          '<h3>%s <span class="muted" style="font-weight:400">· %d%% %s · %d %s</span></h3>'
           '<p class="muted">%s</p>'
           '<table><thead><tr><th>%s</th><th>%s</th><th>%s</th>'
           '</tr></thead><tbody>%s</tbody></table>'
-          % (d['cod'], T(d['nome']), round(d['peso'] * 100),
+          % (T(d['nome']), round(d['peso'] * 100),
              L('do índice', 'of the index'), len(itens), L('indicadores', 'indicators'),
              T(d['desc']), L('Código', 'Code'), L('Indicador', 'Indicator'),
              L('Unidade', 'Unit'), linhas))
@@ -1453,8 +1466,8 @@ def pg_metodologia():
         'simply inherited, such as slope, and gives more to what depends on policy and '
         'behaviour, such as municipal spending and actual cycling levels.') + '''</p>
       <table><thead><tr><th>''' + L('Dimensão', 'Dimension') + '''</th>
-      <th style="text-align:right">''' + L('Peso em 2018', 'Weight in 2018') + '''</th>
-      <th style="text-align:right">''' + L('Peso em 2025', 'Weight in 2025') + '''</th></tr></thead>
+      <th class="c">''' + L('Peso em 2018', 'Weight in 2018') + '''</th>
+      <th class="c">''' + L('Peso em 2025', 'Weight in 2025') + '''</th></tr></thead>
       <tbody>''' + pesos + '''</tbody></table>
 
       <h2>''' + L('Normalização', 'Normalisation') + '''</h2>
@@ -1471,12 +1484,6 @@ def pg_metodologia():
         'best result in the country, some have a level beyond which more adds nothing for '
         'cycling, and others use the range observed across municipalities. Where a lower value '
         'is better, the scale is inverted.') + '''</p>
-      <p>''' + L(
-        'Os parâmetros exactos desta etapa não são publicados. Os valores medidos de cada '
-        'indicador e os resultados finais por dimensão são abertos.',
-        'The exact parameters of this step are not published. The measured values of each '
-        'indicator and the final results by dimension are open.') + '''</p>
-
       <h2>''' + L('Os vinte e cinco indicadores', 'The twenty-five indicators') + '''</h2>
       ''' + ''.join(gl) + '''
 
@@ -1553,9 +1560,7 @@ def pg_metodologia():
         'target="_blank" rel="noopener">CC BY-NC-SA 4.0</a> licence, which allows remixing, '
         'adaptation and reuse for non-commercial purposes, with credit and sharing on the same '
         'terms.') + '''</p>
-      <blockquote>Figueiredo, A. P., Vale, D. S. &amp; Lopes, A. S. (2025).
-      <em>Bike Friendly Index Portugal 2025</em>. BEAM, Faculdade de Arquitectura,
-      Universidade de Lisboa.</blockquote>
+      <blockquote>''' + L("Figueiredo, A. P., Vale, D. S. &amp; Lopes, A. S. (2025). <em>BikeFriendlyIndex: um índice para avaliação da amigabilidade de um concelho para a utilização da bicicleta enquanto modo de transporte urbano</em>. www.bikefriendlyindex.com", "Figueiredo, A. P., Vale, D. S. &amp; Lopes, A. S. (2025). <em>BikeFriendlyIndex: an index to assess how friendly a municipality is to cycling as a mode of urban transport</em>. www.bikefriendlyindex.com") + '''</blockquote>
       <p class="small muted">''' + L(
         'Edição de 2018: Figueiredo, A. P. e Vale, D. S. (2018). <em>BikeFriendlyIndex, um '
         'índice para avaliação da amigabilidade de um concelho para a utilização da bicicleta '
@@ -1603,18 +1608,6 @@ def pg_dados():
           'published, 2018 comparable, 2025), with the five dimensions, the BFI and the rank.') + '''</p>
         <div class="btn-row" style="margin-top:14px">
           <a class="btn ghost" href="''' + up + '''dados/bfi_municipios.csv" download>bfi_municipios.csv</a>
-          <button class="btn ghost" type="button" id="dlAll">''' + L('Gerar CSV completo', 'Build full CSV') + '''</button>
-        </div>
-      </div>
-      <div class="card">
-        <p class="eyebrow">''' + L('Tabelas', 'Tables') + '''</p>
-        <h3>''' + L('Indicadores detalhados', 'Detailed indicators') + '''</h3>
-        <p class="small muted">''' + L(
-          'Os 25 indicadores por município, com o valor medido em 2025 e a posição no país.',
-          'All 25 indicators per municipality, with the value measured in 2025 and the position '
-          'in Portugal.') + '''</p>
-        <div class="btn-row" style="margin-top:14px">
-          <a class="btn ghost" href="''' + up + '''dados/bfi_indicadores.csv" download>bfi_indicadores.csv</a>
         </div>
       </div>
       <div class="card">
@@ -1635,10 +1628,8 @@ def pg_dados():
         <p class="eyebrow">''' + L('Agregados', 'Aggregates') + '''</p>
         <h3>''' + L('Valores nacionais', 'National figures') + '''</h3>
         <p class="small muted">''' + L(
-          'Médias por série e dimensão, investimento total, extensão de ciclovias e número de '
-          'municípios com bicicletas partilhadas.',
-          'Averages by series and dimension, total spending, cycle lane length and the number '
-          'of municipalities with bike sharing.') + '''</p>
+          'Médias nacionais por série e por componente.',
+          'National averages by series and by component.') + '''</p>
         <div class="btn-row" style="margin-top:14px">
           <a class="btn ghost" href="''' + up + '''dados/portugal.json" download>portugal.json</a>
         </div>
@@ -1657,39 +1648,20 @@ def pg_dados():
 
     <div class="card" style="margin-top:4px">
       <p class="eyebrow">''' + L('Acesso e uso', 'Access and use') + '''</p>
-      <h3>''' + L('O que está e o que não está publicado', 'What is and is not published') + '''</h3>
+      <h3>''' + L('O que está publicado', 'What is published') + '''</h3>
       <p class="small muted">''' + L(
-        'Estão publicados os resultados finais (BFI, cinco dimensões e posição), os valores '
-        'medidos de cada indicador e a geografia. Não estão publicados os parâmetros de '
-        'normalização nem os pesos dos indicadores dentro de cada dimensão. Para trabalho de '
-        'investigação que precise da especificação completa, contacte a equipa do projecto.',
-        'Published here are the final results (BFI, five dimensions and rank), the measured '
-        'values of each indicator and the geography. The normalisation parameters and the weights '
-        'of indicators inside each dimension are not published. For research that needs the '
-        'full specification, contact the project team.') + '''</p>
+        'Estão publicados os resultados finais de cada município (BFI, cinco componentes e '
+        'posição no ranking), a geografia e as médias nacionais. Não são divulgados dados de '
+        'maior pormenor.',
+        'Published here are the final results for each municipality (BFI, five components and '
+        'rank), the geography and the national averages. No more detailed data is released.') + '''</p>
     </div>
   </div>
 </section>
 '''
-    scripts = '''<script>
-document.getElementById('dlAll').addEventListener('click', function(){
-  var head=['dtmn','municipality','district','capital','population_2021','area_km2',
-    'cycle_lanes_km','urban_cycle_lanes_km','bike_sharing','spending_eur',
-    'cycling_mode_share','women_share',
-    'bfi_2025','rank_2025','c1_2025','c2_2025','c3_2025','c4_2025','c5_2025',
-    'bfi_2018_published','rank_2018_published','bfi_2018_comparable','rank_2018_comparable'];
-  var rows=[head];
-  M.all.forEach(function(m){
-    var a=m.s25||{}, b=m.s18||{}, c=m.s18c||{};
-    rows.push([m.d,m.n,m.dist,m.cap?1:0,m.pop,m.area,m.cic,m.cicU,m.bs?1:0,m.inv,m.ub,m.um,
-      a.bfi,a.rank,a.c1,a.c2,a.c3,a.c4,a.c5,b.bfi,b.rank,c.bfi,c.rank]);
-  });
-  downloadCSV('bfi_full.csv', rows);
-});
-</script>'''
     emit('data', L('Dados abertos · Bike Friendly Index', 'Open data · Bike Friendly Index'), body,
-      L('Descarregue os dados do Bike Friendly Index em CSV, GeoJSON e JSON.',
-        'Download the Bike Friendly Index data as CSV, GeoJSON and JSON.'), scripts)
+      L('Descarregue os resultados do Bike Friendly Index em CSV, GeoJSON e JSON.',
+        'Download the Bike Friendly Index results as CSV, GeoJSON and JSON.'))
 
 
 # ===========================================================================
@@ -1707,17 +1679,17 @@ def pg_sobre():
   <div class="wrap">
     <div class="prose">
       <p class="lead">''' + L(
-        'O Bike Friendly Index é uma iniciativa do grupo de investigação BEAM, na Faculdade de '
+        'O Bike Friendly Index é uma iniciativa do UrbinLab, na Faculdade de '
         'Arquitectura da Universidade de Lisboa, e resulta de experiência acumulada de '
         'investigação e projecto na área da mobilidade activa.',
-        'The Bike Friendly Index is an initiative of the BEAM research group at the Faculty of '
+        'The Bike Friendly Index is an initiative of UrbinLab at the Faculty of '
         'Architecture, University of Lisbon, drawing on years of research and practice in '
         'active mobility.') + '''</p>
 
       <h2>''' + L('Equipa', 'Team') + '''</h2>
       <p>A. P. Figueiredo, D. S. Vale ''' + L('e', 'and') + ''' A. S. Lopes.<br>
-      ''' + L('BEAM · Faculdade de Arquitectura · Universidade de Lisboa',
-              'BEAM · Faculty of Architecture · University of Lisbon') + '''</p>
+      ''' + L('UrbinLab - Faculdade de Arquitectura · Universidade de Lisboa | Pulsar Urbanismo',
+              'UrbinLab - Faculty of Architecture · University of Lisbon | Pulsar Urbanismo') + '''</p>
 
       <h2>''' + L('Edições', 'Editions') + '''</h2>
       <p>''' + L(
@@ -1735,9 +1707,7 @@ def pg_sobre():
         'evolves and to identify the municipalities that stand out in promoting cycling.') + '''</p>
 
       <h2>''' + L('Como citar', 'How to cite') + '''</h2>
-      <blockquote>Figueiredo, A. P., Vale, D. S. &amp; Lopes, A. S. (2025).
-      <em>Bike Friendly Index Portugal 2025</em>. BEAM, Faculdade de Arquitectura,
-      Universidade de Lisboa.</blockquote>
+      <blockquote>''' + L("Figueiredo, A. P., Vale, D. S. &amp; Lopes, A. S. (2025). <em>BikeFriendlyIndex: um índice para avaliação da amigabilidade de um concelho para a utilização da bicicleta enquanto modo de transporte urbano</em>. www.bikefriendlyindex.com", "Figueiredo, A. P., Vale, D. S. &amp; Lopes, A. S. (2025). <em>BikeFriendlyIndex: an index to assess how friendly a municipality is to cycling as a mode of urban transport</em>. www.bikefriendlyindex.com") + '''</blockquote>
 
       <h2>''' + L('Licença', 'Licence') + '''</h2>
       <p>''' + L(
@@ -1797,10 +1767,10 @@ def ficha(m, ordem):
       (L('População 2021', 'Population 2021'), i(m['pop']), ''),
       (L('Área', 'Area'), n(m['area'], 1), 'km²'),
       (L('Ciclovias', 'Cycle lanes'), n(m['cic'], 1), L('km no concelho', 'km in the municipality')),
-      (L('Em área urbana', 'In urban areas'), n(m['cicU'], 1), 'km'),
+      (L('Ciclovias', 'Cycle lanes'), n(m['cicU'], 1), L('km em área urbana', 'km in urban areas')),
       (L('Bicicletas partilhadas', 'Bike sharing'), L('Sim', 'Yes') if m['bs'] else L('Não', 'No'), ''),
       (L('Investimento 2023-2025', 'Spending 2023-2025'), eur(m['inv']), ''),
-      (L('Bicicleta no total', 'Cycling mode share'), n((m['ub'] or 0) * 100, 2),
+      (L('Utilização da Bicicleta', 'Cycling Levels'), n((m['ub'] or 0) * 100, 2),
        L('% das deslocações', '% of trips')),
       (L('Mulheres', 'Women'), n((m['um'] or 0) * 100, 1), L('% de quem pedala', '% of cyclists')),
     ]
@@ -1815,39 +1785,14 @@ def ficha(m, ordem):
         dd = (v - v18) if v18 is not None else None
         cls = 'up' if (dd or 0) > 0.05 else ('down' if (dd or 0) < -0.05 else 'flat')
         drows.append(
-          '<tr><td><strong>%s</strong> %s<br><span class="small muted">%s %d%%</span></td>'
+          '<tr><td><strong>%s</strong><br><span class="small muted">%s %d%%</span></td>'
           '<td class="n cellbar"><i style="width:%.0f%%;background:var(--seq-300)"></i><span>%s</span></td>'
           '<td class="n">%s</td><td class="n"><span class="delta %s">%s</span></td>'
           '<td class="n muted">%s</td></tr>'
-          % (d['cod'], T(d['nome']), L('peso', 'weight'), round(d['peso'] * 100),
+          % (T(d['nome']), L('peso', 'weight'), round(d['peso'] * 100),
              max(2, min(100, v / 10 * 100)), n(v),
              n(v18) if v18 is not None else '-', cls,
              sign(dd) if dd is not None else '-', n(nac)))
-
-    grupos = {}
-    for x in IND:
-        grupos.setdefault(x['dim'], []).append(x)
-    irows = []
-    for d in DIMS:
-        irows.append('<tr><td colspan="4" style="background:var(--surface-2);font-weight:650;'
-                     'font-size:.82rem;letter-spacing:.03em">%s %s</td></tr>'
-                     % (d['cod'], T(d['nome']).upper()))
-        for x in grupos.get(d['k'], []):
-            raw, pos = m['ind'].get(x['k'], [None, None])
-            frac = (1 - (pos - 1) / 277.0) if pos else 0
-            irows.append(
-              '<tr><td class="num small">%s</td><td>%s <span class="small muted">%s</span></td>'
-              '<td class="n">%s</td><td class="n cellbar">'
-              '<i style="width:%.0f%%;background:var(--seq-250)"></i><span>%s</span></td></tr>'
-              % (x['k'], T(x['nome']), T(x['un']), fmt_ind(raw, x['fmt']),
-                 max(2, min(100, frac * 100)), ordinal(pos) if pos else '-'))
-
-    viz_rows = ''.join(
-      '<tr%s><td class="n">%d</td><td class="nm"><a href="%s.html">%s</a></td>'
-      '<td class="n">%s</td></tr>'
-      % (' style="background:var(--accent-soft)"' if x['d'] == m['d'] else '',
-         x['s25']['rank'], x['slug'], x['n'], n(x['s25']['bfi']))
-      for x in pos_dist)
 
     nav_prev = ('<a href="%s.html">&larr; %s %s</a>' % (prev['slug'], ordinal(prev['s25']['rank']), prev['n'])) if prev else '<span></span>'
     nav_next = ('<a href="%s.html">%s %s &rarr;</a>' % (nxt['slug'], ordinal(nxt['s25']['rank']), nxt['n'])) if nxt else '<span></span>'
@@ -1896,16 +1841,15 @@ def ficha(m, ordem):
 
 <section class="tight">
   <div class="wrap">
-    <div class="grid-2" style="grid-template-columns:380px 1fr;align-items:start">
+    <div class="grid-2" style="grid-template-columns:380px 1fr;align-items:stretch">
       <div class="card">
         <p class="eyebrow">''' + L('Perfil', 'Profile') + '''</p>
-        <h3 style="margin-bottom:2px">''' + L(m['n'] + ' contra a média nacional',
-                                              m['n'] + ' against the national average') + '''</h3>
+        <h3 style="margin-bottom:2px">''' + m['n'] + '''</h3>
         <div id="radarM" style="margin-top:6px"></div>
       </div>
       <div class="card card-pad-0">
         <div style="padding:22px 22px 0"><p class="eyebrow">''' + L('Dimensões', 'Dimensions') + '''</p>
-        <h3>''' + L('Onde ganha e onde perde', 'Where it wins and where it loses') + '''</h3></div>
+        <h3>''' + L('Comparação 2018 - 2025', 'Comparison 2018 - 2025') + '''</h3></div>
         <div class="tbl-wrap" style="border:0;border-radius:0">
           <table class="tbl"><thead><tr><th>''' + L('Dimensão', 'Dimension') + '''</th>
           <th style="text-align:right">2025</th>
@@ -1921,40 +1865,15 @@ def ficha(m, ordem):
 
 <section class="tight">
   <div class="wrap">
-    <div class="grid-2" style="grid-template-columns:1fr 340px">
-      <div class="ficha-det"><div class="card card-pad-0">
-        <div style="padding:22px 22px 0">
-          <p class="eyebrow">''' + L('Detalhe', 'Detail') + '''</p>
-          <h3>''' + L('Os vinte e cinco indicadores', 'The twenty-five indicators') + '''</h3>
-          <p class="small muted">''' + L(
-            'O valor medido e a posição do município entre os 278, em cada indicador '
-            '(1.º é o melhor).',
-            'The measured value and the municipality’s position among the 278, on each '
-            'indicator (1st is best).') + '''</p>
-        </div>
-        <div class="tbl-wrap" style="border:0;border-radius:0">
-          <table class="tbl"><thead><tr><th>''' + L('Cód.', 'Code') + '''</th>
-          <th>''' + L('Indicador', 'Indicator') + '''</th>
-          <th style="text-align:right">''' + L('Valor', 'Value') + '''</th>
-          <th style="text-align:right">''' + L('Posição no país', 'Position in Portugal') + '''</th></tr></thead>
-          <tbody>''' + ''.join(irows) + '''</tbody></table>
-        </div>
-      </div></div>
-      <div class="ficha-side">
-        <div class="card">
-          <p class="eyebrow">''' + L('Localização', 'Location') + '''</p>
-          <div class="mapbox" id="miniMapa" style="border:0;max-width:200px;margin-inline:auto"></div>
-        </div>
-        <div class="card card-pad-0">
-          <div style="padding:20px 20px 0"><p class="eyebrow">''' + L('Vizinhança', 'Neighbourhood') + '''</p>
-          <h3>''' + L('Distrito de ' + m['dist'], m['dist'] + ' district') + '''</h3></div>
-          <div class="tbl-wrap" style="border:0;border-radius:0;max-height:330px;overflow-y:auto">
-            <table class="tbl"><thead><tr><th>#</th>
-            <th>''' + L('Município', 'Municipality') + '''</th>
-            <th style="text-align:right">BFI</th></tr></thead>
-            <tbody>''' + viz_rows + '''</tbody></table>
-          </div>
-        </div>
+    <div class="card card-pad-0">
+      <div style="padding:22px 22px 14px">
+        <p class="eyebrow">''' + L('Localização', 'Location') + '''</p>
+        <h3 style="margin:0">''' + m['n'] + '''</h3>
+      </div>
+      <div class="fmap">
+        <div id="fichaMapa" class="fullbleed"></div>
+        <div class="map-legend-v"><div id="fichaLeg"></div></div>
+        <p class="map-attrib" id="fichaAttrib" style="position:absolute;left:12px;bottom:6px;margin:0;z-index:6"></p>
       </div>
     </div>
   </div>
@@ -1978,7 +1897,11 @@ def ficha(m, ordem):
   var r = document.getElementById('radarM');
   function draw(){ radar(r, [{name:m.n, v:m.s25}, {name:T.natAvg, v:MEDIA.s25, dashed:true}]); }
   draw(); r._redraw = draw; r.setAttribute('data-redraw','1');
-  choropleth(document.getElementById('miniMapa'), {serie:'s25', campo:'bfi', sel:m.d, base:''});
+  var fm = document.getElementById('fichaMapa');
+  choropleth(fm, {serie:'s25', campo:'bfi', sel:m.d, focus:m.d, dim:true, tiles:true, zoom:true,
+                  base:'', zoomHost: fm.parentNode});
+  mapLegend(document.getElementById('fichaLeg'), 'bfi', 'BFI 2025', {vertical:true});
+  document.getElementById('fichaAttrib').textContent = T.attrib;
 })();
 </script>'''
 

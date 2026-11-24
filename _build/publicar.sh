@@ -5,8 +5,10 @@
 #   ./_build/publicar.sh --enviar              gera, faz commit e envia
 #   ./_build/publicar.sh --enviar "mensagem"   idem, com mensagem de commit
 #
-# A pasta explorador-v1/ do repositorio nunca e tocada: e o arquivo da versao
-# anterior e vive apenas la, nao neste projecto.
+# O repositorio e publico. So pode ir para la o que esta em site/: os dados de detalhe
+# (indicadores, valores normalizados, pesos) vivem em _novo_site/dados_site/ e ficam na
+# copia local. Este script recusa publicar se encontrar na pasta dados/ algo que nao
+# esteja na lista dos cinco ficheiros permitidos, ou se encontrar rasto desses dados.
 set -euo pipefail
 
 REPO=https://github.com/soareslopes/bfi_explorer.git
@@ -20,15 +22,24 @@ cd "$SITE"
 python3 _build/1_dados.py
 BFI_BASE_URL="$BASE" python3 _build/2_paginas.py
 
+echo "==> a verificar que nenhum dado de detalhe vai para o repositorio publico"
+PERMITIDOS="bfi_2018_metodo2025.geojson bfi_2018_original.geojson bfi_2025.geojson bfi_municipios.csv portugal.json"
+for f in "$SITE"/dados/*; do
+  nome=$(basename "$f")
+  case " $PERMITIDOS " in *" $nome "*) ;; *) echo "ERRO: dados/$nome nao esta na lista permitida"; exit 1;; esac
+done
+if grep -rlE 'norm_20(18|25)|peso_na_dimensao|bruto_2025|valor_2025' "$SITE" \
+     --include='*.html' --include='*.js' --include='*.csv' --include='*.json' --include='*.geojson' | grep -q .; then
+  echo "ERRO: encontrei colunas de detalhe nos ficheiros do site"; exit 1
+fi
+
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
 echo "==> a clonar o repositorio"
 git clone --quiet --depth 1 "$REPO" "$TMP/repo"
 
-echo "==> a copiar o site (explorador-v1/ fica intacto)"
-rsync -a --delete \
-      --exclude '.git/' --exclude 'explorador-v1/' \
-      "$SITE"/ "$TMP/repo"/
+echo "==> a copiar o site (o que ja nao existe em site/ e apagado do repositorio)"
+rsync -a --delete --exclude '.git/' "$SITE"/ "$TMP/repo"/
 
 cd "$TMP/repo"
 if git diff --quiet && git diff --cached --quiet && [ -z "$(git status --porcelain)" ]; then
@@ -47,7 +58,7 @@ fi
 
 git commit --quiet -m "$MSG
 
-Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 git push origin main
 echo "==> enviado. O Pages leva cerca de um minuto a reconstruir."
 echo "    $BASE"

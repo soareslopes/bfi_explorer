@@ -126,11 +126,12 @@
     selD.addEventListener('change', function () { dist = selD.value; draw(); });
     dl.addEventListener('click', function () {
       var data = rows();
+      /* so o BFI, as cinco componentes e a posicao: nada de maior pormenor */
       var head = ['rank', 'municipality', 'district', 'bfi', 'c1_slope', 'c2_built_environment',
-                  'c3_infrastructure', 'c4_political_commitment', 'c5_cycling', 'population_2021', 'cycle_lanes_km'];
+                  'c3_infrastructure', 'c4_political_commitment', 'c5_cycling'];
       var out = [head].concat(data.map(function (m) {
         var s = m[serie];
-        return [s.rank, m.n, m.dist, s.bfi, s.c1, s.c2, s.c3, s.c4, s.c5, m.pop, m.cic];
+        return [s.rank, m.n, m.dist, s.bfi, s.c1, s.c2, s.c3, s.c4, s.c5];
       }));
       downloadCSV('bfi_' + (serie === 's25' ? '2025' : serie === 's18' ? '2018_original' : '2018_comparable') + '.csv', out);
     });

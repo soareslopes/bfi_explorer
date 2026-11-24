@@ -32,11 +32,11 @@
      --------------------------------------------------------- */
   window.radar = function (node, series, opts) {
     opts = opts || {};
-    var max = opts.max || 10, R = 112, cx = 170, cy = 148, n = 5;
+    var max = opts.max || 10, R = 104, cx = 200, cy = 158, n = 5;
     var labels = opts.labels || TXT().dimLabels || [];
     var keys = ['c1', 'c2', 'c3', 'c4', 'c5'];
     clear(node);
-    var svg = el('svg', { viewBox: '0 0 340 300', class: 'chart', role: 'img' });
+    var svg = el('svg', { viewBox: '0 0 400 318', class: 'chart', role: 'img' });
     svg.appendChild(el('title', {}, opts.title || TXT().profileTitle));
 
     function pt(i, v) {
@@ -57,14 +57,29 @@
     svg.appendChild(g);
 
     /* rotulos dos eixos */
+    /* nomes completos, partidos em linhas curtas para nunca sairem do desenho */
+    function wrap(txt, maxc) {
+      var words = String(txt).split(' '), lines = [], cur = '';
+      words.forEach(function (w) {
+        if (cur && (cur + ' ' + w).length > maxc) { lines.push(cur); cur = w; }
+        else cur = cur ? cur + ' ' + w : w;
+      });
+      if (cur) lines.push(cur);
+      return lines;
+    }
     for (var j = 0; j < n; j++) {
       var a = -Math.PI / 2 + j * 2 * Math.PI / n;
-      var lx = cx + (R + 26) * Math.cos(a), ly = cy + (R + 26) * Math.sin(a);
+      var lx = cx + (R + 14) * Math.cos(a), ly = cy + (R + 14) * Math.sin(a);
       var anchor = Math.abs(Math.cos(a)) < 0.3 ? 'middle' : (Math.cos(a) > 0 ? 'start' : 'end');
-      svg.appendChild(el('text', {
-        x: lx.toFixed(1), y: (ly + 4).toFixed(1), 'text-anchor': anchor,
-        class: 'lbl', 'font-size': 10.5, 'font-weight': 600
-      }, labels[j]));
+      var lines = wrap(labels[j], 13), lh = 14;
+      var sy = Math.sin(a);
+      var y0 = sy < -0.5 ? ly - (lines.length - 1) * lh : (sy > 0.5 ? ly + 10 : ly + 4 - (lines.length - 1) * lh / 2);
+      var t = el('text', { x: lx.toFixed(1), y: y0.toFixed(1), 'text-anchor': anchor,
+                           class: 'lbl', style: 'font-size:12.5px', 'font-weight': 600 });
+      lines.forEach(function (ln, li) {
+        t.appendChild(el('tspan', { x: lx.toFixed(1), dy: li ? lh : 0 }, ln));
+      });
+      svg.appendChild(t);
     }
 
     var colors = [cv('--series-1'), cv('--ink-3')];
@@ -110,7 +125,7 @@
   window.groupedBars = function (node, cats, series, opts) {
     opts = opts || {};
     clear(node);
-    var W = opts.width || 680, H = opts.height || 300, L = 54, R = 16, T = 14, B = 54;
+    var W = opts.width || 680, H = opts.height || 300, L = opts.left || 54, R = opts.right || 16, T = 14, B = 54;
     var FS = opts.fontSize || 11;
     var max = opts.max || Math.max.apply(null, series.reduce(function (a, s) { return a.concat(s.v); }, [])) * 1.12;
     var iw = W - L - R, ih = H - T - B;
@@ -125,7 +140,7 @@
       var v = max * i / ticks, y = T + ih - ih * i / ticks;
       g.appendChild(el('line', { x1: L, y1: y.toFixed(1), x2: W - R, y2: y.toFixed(1), stroke: cv('--line') }));
       g.appendChild(el('text', { x: L - 9, y: (y + 4).toFixed(1), 'text-anchor': 'end',
-                                 class: 'val', 'font-size': FS }, F.n(v, max > 20 ? 0 : 1)));
+                                 class: 'val', style: 'font-size:' + FS + 'px' }, F.n(v, max > 20 ? 0 : 1)));
     }
     svg.appendChild(g);
 
@@ -152,7 +167,7 @@
         if (series.length <= 4 && opts.directLabels !== false) {
           svg.appendChild(el('text', {
             x: (x + sw / 2).toFixed(1), y: (y - 6).toFixed(1), 'text-anchor': 'middle',
-            class: 'val', 'font-size': FS, 'font-weight': 600, fill: cv('--ink-2')
+            class: 'val', style: 'font-size:' + FS + 'px', 'font-weight': 600, fill: cv('--ink-2')
           }, F.n(v, 2)));
         }
       });
@@ -160,9 +175,9 @@
       var words = cat.split(' '), line1 = words[0], line2 = words.slice(1).join(' ');
       var tx = L + ci * bw + bw / 2;
       svg.appendChild(el('text', { x: tx.toFixed(1), y: T + ih + 20, 'text-anchor': 'middle',
-                                   class: 'lbl', 'font-size': FS, 'font-weight': 600 }, line1));
+                                   class: 'lbl', style: 'font-size:' + FS + 'px', 'font-weight': 600 }, line1));
       if (line2) svg.appendChild(el('text', { x: tx.toFixed(1), y: T + ih + 20 + FS * 1.25,
-                                   'text-anchor': 'middle', class: 'lbl', 'font-size': FS }, line2));
+                                   'text-anchor': 'middle', class: 'lbl', style: 'font-size:' + FS + 'px' }, line2));
     });
     svg.appendChild(el('line', { x1: L, y1: T + ih, x2: W - R, y2: T + ih, stroke: cv('--line-strong') }));
     node.appendChild(svg);
@@ -280,8 +295,10 @@
       c.addEventListener('click', function () { if (p.href) location.href = p.href; });
       svg.appendChild(c);
       if (p.label) {
+        var lx = X(p.x) + 9, anc = 'start';
+        if (lx + p.n.length * 6.8 > W - 4) { lx = X(p.x) - 9; anc = 'end'; }
         svg.appendChild(el('text', {
-          x: (X(p.x) + 9).toFixed(1), y: (Y(p.y) + 4).toFixed(1), class: 'lbl',
+          x: lx.toFixed(1), y: (Y(p.y) + 4).toFixed(1), class: 'lbl', 'text-anchor': anc,
           'font-weight': 600, fill: cv('--ink')
         }, p.n));
       }
@@ -300,6 +317,28 @@
   /* ---------------------------------------------------------
      SPARK de dimensoes para o cartao
      --------------------------------------------------------- */
+  /* radar em miniatura para os cartoes: so a forma, sem rotulos; a tracejado, a media nacional */
+  window.miniRadar = function (s, ref) {
+    var cx = 50, cy = 50, R = 40, n = 5, keys = ['c1', 'c2', 'c3', 'c4', 'c5'];
+    function pt(i, v) {
+      var a = -Math.PI / 2 + i * 2 * Math.PI / n, r = R * Math.min((v || 0) / 10, 1);
+      return (cx + r * Math.cos(a)).toFixed(1) + ',' + (cy + r * Math.sin(a)).toFixed(1);
+    }
+    function poly(vals) { return keys.map(function (k, i) { return pt(i, vals[k]); }).join(' '); }
+    var grid = '';
+    [0.5, 1].forEach(function (f) {
+      var p = []; for (var i = 0; i < n; i++) p.push(pt(i, 10 * f));
+      grid += '<polygon points="' + p.join(' ') + '" style="fill:none;stroke:var(--line);stroke-width:1"/>';
+    });
+    for (var i = 0; i < n; i++) {
+      grid += '<line x1="50" y1="50" x2="' + pt(i, 10).split(',')[0] + '" y2="' + pt(i, 10).split(',')[1] +
+              '" style="stroke:var(--line);stroke-width:1"/>';
+    }
+    return '<svg viewBox="0 0 100 100" class="radarmini" aria-hidden="true">' + grid +
+      (ref ? '<polygon points="' + poly(ref) + '" style="fill:none;stroke:var(--ink-3);stroke-width:1.2;stroke-dasharray:3 2"/>' : '') +
+      '<polygon points="' + poly(s) + '" style="fill:var(--series-1);fill-opacity:.2;stroke:var(--series-1);stroke-width:1.8;stroke-linejoin:round"/></svg>';
+  };
+
   window.sparkDims = function (s) {
     var out = '';
     ['c1', 'c2', 'c3', 'c4', 'c5'].forEach(function (k) {

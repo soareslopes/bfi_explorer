@@ -43,7 +43,6 @@ PAGES = {
 MUN_DIR = {'pt': 'municipio', 'en': 'municipality'}
 
 # o explorador da versao anterior, arquivado numa subpasta do mesmo site
-LEGACY_DIR = 'explorador-v1/'
 
 
 def file_of(key, lang):
@@ -94,12 +93,13 @@ TXT = {
  'ftExp':    {'pt': 'Explorar', 'en': 'Explore'},
  'ftPrj':    {'pt': 'Projecto', 'en': 'Project'},
  'ftRepo':   {'pt': 'Repositório', 'en': 'Repository'},
- 'ftLegacy': {'pt': 'Explorador anterior', 'en': 'Previous explorer'},
  'ftAllMun': {'pt': 'Os 278 municípios', 'en': 'All 278 municipalities'},
  'ftMap':    {'pt': 'Mapa interactivo', 'en': 'Interactive map'},
  'ftData':   {'pt': 'Dados abertos', 'en': 'Open data'},
- 'org':      {'pt': 'BEAM · Faculdade de Arquitectura · Universidade de Lisboa',
-              'en': 'BEAM · Faculty of Architecture · University of Lisbon'},
+ 'org':      {'pt': 'UrbinLab - Faculdade de Arquitectura · Universidade de Lisboa | Pulsar Urbanismo',
+              'en': 'UrbinLab - Faculty of Architecture · University of Lisbon | Pulsar Urbanismo'},
+ 'cite':     {'pt': 'Figueiredo, A. P., Vale, D. S. &amp; Lopes, A. S. (2025). <em>BikeFriendlyIndex: um índice para avaliação da amigabilidade de um concelho para a utilização da bicicleta enquanto modo de transporte urbano</em>. www.bikefriendlyindex.com',
+              'en': 'Figueiredo, A. P., Vale, D. S. &amp; Lopes, A. S. (2025). <em>BikeFriendlyIndex: an index to assess how friendly a municipality is to cycling as a mode of urban transport</em>. www.bikefriendlyindex.com'},
 }
 
 
@@ -138,7 +138,6 @@ def footer(lang, up_lang, up_site=''):
                             (L('data'), TXT['ftData'][lang])]),
       (TXT['ftPrj'][lang], [(L('method'), label_of('method', lang)),
                             (L('about'), label_of('about', lang)),
-                            (up_site + LEGACY_DIR, TXT['ftLegacy'][lang]),
                             ('https://github.com/soareslopes/bfi_explorer', TXT['ftRepo'][lang])]),
     ]
     out = []
@@ -152,16 +151,14 @@ def footer(lang, up_lang, up_site=''):
       '<div><a class="brand" href="%sindex.html" style="margin-bottom:12px">%s<b>Bike Friendly Index</b></a>'
       '<p class="cite">%s</p>'
       '<p class="cite" style="margin-top:14px"><strong>%s</strong><br>'
-      'Figueiredo, A. P., Vale, D. S. &amp; Lopes, A. S. (2025). '
-      '<em>Bike Friendly Index Portugal 2025</em>. BEAM, Faculdade de Arquitectura, '
-      'Universidade de Lisboa.</p></div>'
+      '%s</p></div>'
       '%s'
       '</div><div class="ft-base">'
       '<span>%s</span>'
       '<span><a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" '
       'rel="noopener">CC BY-NC-SA 4.0</a></span>'
       '</div></div></footer>'
-    ) % (up_lang, LOGO, TXT['blurb'][lang], TXT['citeLab'][lang], ''.join(out), TXT['org'][lang])
+    ) % (up_lang, LOGO, TXT['blurb'][lang], TXT['citeLab'][lang], TXT['cite'][lang], ''.join(out), TXT['org'][lang])
 
 
 def page(lang, title, body, active='', up_assets='', up_lang='', alt_href='#',
@@ -195,11 +192,17 @@ def page(lang, title, body, active='', up_assets='', up_lang='', alt_href='#',
 ''' + extra_head + '''
 </head>
 <body>
+<table class="ph-wrap" role="presentation">
+<thead class="ph-head"><tr><td><div class="print-head" aria-hidden="true"><img src="''' + up_assets + '''assets/img/urbinlab.png" alt="UrbinLab"><span>Bike Friendly Index</span></div></td></tr></thead>
+<tbody class="ph-body"><tr><td>
 ''' + nav(lang, active, up_lang, alt_href) + '''
 <main>
 ''' + body + '''
 </main>
 ''' + footer(lang, up_lang, up_assets) + '''
+</td></tr></tbody>
+<tfoot class="ph-foot"><tr><td><div class="print-foot" aria-hidden="true">''' + TXT['cite'][lang] + '''</div></td></tr></tfoot>
+</table>
 <script src="''' + up_assets + '''assets/js/i18n.js''' + V + '''"></script>
 <script src="''' + up_assets + '''assets/js/data.js''' + V + '''"></script>
 <script src="''' + up_assets + '''assets/js/geo.js''' + V + '''"></script>
