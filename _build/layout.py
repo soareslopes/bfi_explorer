@@ -98,8 +98,8 @@ TXT = {
  'ftData':   {'pt': 'Dados abertos', 'en': 'Open data'},
  'org':      {'pt': 'UrbinLab - Faculdade de Arquitectura · Universidade de Lisboa | Pulsar Urbanismo',
               'en': 'UrbinLab - Faculty of Architecture · University of Lisbon | Pulsar Urbanismo'},
- 'cite':     {'pt': 'Figueiredo, A. P., Vale, D. S. &amp; Lopes, A. S. (2025). <em>BikeFriendlyIndex: um índice para avaliação da amigabilidade de um concelho para a utilização da bicicleta enquanto modo de transporte urbano</em>. www.bikefriendlyindex.com',
-              'en': 'Figueiredo, A. P., Vale, D. S. &amp; Lopes, A. S. (2025). <em>BikeFriendlyIndex: an index to assess how friendly a municipality is to cycling as a mode of urban transport</em>. www.bikefriendlyindex.com'},
+ 'cite':     {'pt': 'Vale, D. S., Lopes, A. S. &amp; Figueiredo, A. P. (2026). <em>BikeFriendlyIndex: um índice para avaliação da amigabilidade de um concelho para a utilização da bicicleta enquanto modo de transporte urbano</em>. www.bikefriendlyindex.com',
+              'en': 'Vale, D. S., Lopes, A. S. &amp; Figueiredo, A. P. (2026). <em>BikeFriendlyIndex: an index to assess how friendly a municipality is to cycling as a mode of urban transport</em>. www.bikefriendlyindex.com'},
 }
 
 

@@ -1560,7 +1560,7 @@ def pg_metodologia():
         'target="_blank" rel="noopener">CC BY-NC-SA 4.0</a> licence, which allows remixing, '
         'adaptation and reuse for non-commercial purposes, with credit and sharing on the same '
         'terms.') + '''</p>
-      <blockquote>''' + L("Figueiredo, A. P., Vale, D. S. &amp; Lopes, A. S. (2025). <em>BikeFriendlyIndex: um índice para avaliação da amigabilidade de um concelho para a utilização da bicicleta enquanto modo de transporte urbano</em>. www.bikefriendlyindex.com", "Figueiredo, A. P., Vale, D. S. &amp; Lopes, A. S. (2025). <em>BikeFriendlyIndex: an index to assess how friendly a municipality is to cycling as a mode of urban transport</em>. www.bikefriendlyindex.com") + '''</blockquote>
+      <blockquote>''' + L("Vale, D. S., Lopes, A. S. &amp; Figueiredo, A. P. (2026). <em>BikeFriendlyIndex: um índice para avaliação da amigabilidade de um concelho para a utilização da bicicleta enquanto modo de transporte urbano</em>. www.bikefriendlyindex.com", "Vale, D. S., Lopes, A. S. &amp; Figueiredo, A. P. (2026). <em>BikeFriendlyIndex: an index to assess how friendly a municipality is to cycling as a mode of urban transport</em>. www.bikefriendlyindex.com") + '''</blockquote>
       <p class="small muted">''' + L(
         'Edição de 2018: Figueiredo, A. P. e Vale, D. S. (2018). <em>BikeFriendlyIndex, um '
         'índice para avaliação da amigabilidade de um concelho para a utilização da bicicleta '
@@ -1687,7 +1687,7 @@ def pg_sobre():
         'active mobility.') + '''</p>
 
       <h2>''' + L('Equipa', 'Team') + '''</h2>
-      <p>A. P. Figueiredo, D. S. Vale ''' + L('e', 'and') + ''' A. S. Lopes.<br>
+      <p>D. S. Vale, A. S. Lopes ''' + L('e', 'and') + ''' A. P. Figueiredo.<br>
       ''' + L('UrbinLab - Faculdade de Arquitectura · Universidade de Lisboa | Pulsar Urbanismo',
               'UrbinLab - Faculty of Architecture · University of Lisbon | Pulsar Urbanismo') + '''</p>
 
@@ -1707,7 +1707,7 @@ def pg_sobre():
         'evolves and to identify the municipalities that stand out in promoting cycling.') + '''</p>
 
       <h2>''' + L('Como citar', 'How to cite') + '''</h2>
-      <blockquote>''' + L("Figueiredo, A. P., Vale, D. S. &amp; Lopes, A. S. (2025). <em>BikeFriendlyIndex: um índice para avaliação da amigabilidade de um concelho para a utilização da bicicleta enquanto modo de transporte urbano</em>. www.bikefriendlyindex.com", "Figueiredo, A. P., Vale, D. S. &amp; Lopes, A. S. (2025). <em>BikeFriendlyIndex: an index to assess how friendly a municipality is to cycling as a mode of urban transport</em>. www.bikefriendlyindex.com") + '''</blockquote>
+      <blockquote>''' + L("Vale, D. S., Lopes, A. S. &amp; Figueiredo, A. P. (2026). <em>BikeFriendlyIndex: um índice para avaliação da amigabilidade de um concelho para a utilização da bicicleta enquanto modo de transporte urbano</em>. www.bikefriendlyindex.com", "Vale, D. S., Lopes, A. S. &amp; Figueiredo, A. P. (2026). <em>BikeFriendlyIndex: an index to assess how friendly a municipality is to cycling as a mode of urban transport</em>. www.bikefriendlyindex.com") + '''</blockquote>
 
       <h2>''' + L('Licença', 'Licence') + '''</h2>
       <p>''' + L(
