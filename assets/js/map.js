@@ -222,7 +222,7 @@
         p.style.cursor = 'pointer';
         p.addEventListener('click', function () {
           if (host._moved) return;
-          location.href = (opts.base || 'municipio/') + m.slug + '.html';
+          location.href = (opts.base != null ? opts.base : 'municipio/') + m.slug + '.html';
         });
       }
       if (opts.onSelect) p.addEventListener('click', function () {
