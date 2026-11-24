@@ -47,7 +47,7 @@
     ctrls.appendChild(fs); ctrls.appendChild(fd); ctrls.appendChild(seg); ctrls.appendChild(dl);
 
     var count = h('div', { class: 'small muted', style: 'margin:-6px 0 12px' });
-    var tw = h('div', { class: 'tbl-wrap', style: 'max-height:70vh;overflow-y:auto' });
+    var tw = h('div', { class: 'tbl-wrap', style: 'max-height:70vh;overflow-y:auto;overflow-x:hidden' });
     var table = h('table', { class: 'tbl' });
     tw.appendChild(table);
     wrap.appendChild(ctrls); wrap.appendChild(count); wrap.appendChild(tw);
@@ -82,7 +82,7 @@
       table.innerHTML = '';
       var thead = h('thead'), tr = h('tr');
       COLS.forEach(function (c) {
-        var th = h('th', { scope: 'col', class: sort.k === c.k ? 'sorted' + (sort.dir > 0 ? ' asc' : '') : '',
+        var th = h('th', { scope: 'col', class: 'col-' + c.k + (sort.k === c.k ? ' sorted' + (sort.dir > 0 ? ' asc' : '') : ''),
                            style: c.w ? 'width:' + c.w + 'px' : null,
                            title: T.sortBy + ' ' + c.t }, c.t);
         th.addEventListener('click', function () {
@@ -100,18 +100,18 @@
         COLS.forEach(function (c) {
           var v = c.get(m, serie);
           if (c.k === 'n') {
-            r.appendChild(h('td', { class: 'nm' },
+            r.appendChild(h('td', { class: 'nm col-n' },
               '<a href="' + (opts.base || 'municipio/') + m.slug + '.html">' + esc(m.n) + '</a>' +
               (m.cap ? ' <span class="chip" style="padding:1px 6px;font-size:.66rem">' + T.capital + '</span>' : '')));
           } else if (c.bar && v !== null) {
             var pc = Math.max(2, Math.min(100, v / c.bar * 100));
-            r.appendChild(h('td', { class: 'n cellbar' },
+            r.appendChild(h('td', { class: 'n cellbar col-' + c.k },
               '<i style="width:' + pc.toFixed(0) + '%;background:' + colorOf(c.k === 'bfi' ? 'bfi' : 'dim', v) + '"></i>' +
               '<span>' + F.n(v, 2) + '</span>'));
           } else if (c.n) {
-            r.appendChild(h('td', { class: 'n' }, v === null ? '-' : (c.k === 'pop' ? F.i(v) : (c.k === 'rank' ? v : F.n(v, c.k === 'cic' ? 1 : 2)))));
+            r.appendChild(h('td', { class: 'n col-' + c.k }, v === null ? '-' : (c.k === 'pop' ? F.i(v) : (c.k === 'rank' ? v : F.n(v, c.k === 'cic' ? 1 : 2)))));
           } else {
-            r.appendChild(h('td', {}, esc(v)));
+            r.appendChild(h('td', { class: 'col-' + c.k }, esc(v)));
           }
         });
         tb.appendChild(r);

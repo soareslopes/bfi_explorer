@@ -325,15 +325,15 @@ def pg_index():
 def pg_2025():
     def row(m):
         return ('<tr><td class="n">%d</td><td class="nm"><a href="%s%s.html">%s</a></td>'
-                '<td>%s</td><td class="n">%s</td><td class="n">%s</td></tr>'
+                '<td class="col-dist">%s</td><td class="n">%s</td><td class="n">%s</td></tr>'
                 % (m['s25']['rank'], MD(), m['slug'], m['n'], m['dist'], n(m['s25']['bfi']),
                    sign(m['s25']['bfi'] - m['s18c']['bfi']) if m['s18c'] else '-'))
     top_rows = ''.join(row(m) for m in top25[:10])
     bot_rows = ''.join(row(m) for m in top25[-10:])
     cap_rows = ''.join(
       '<tr><td class="n">%d</td><td class="nm"><a href="%s%s.html">%s</a></td>'
-      '<td class="n">%s</td><td class="n">%s</td><td class="n">%s</td>'
-      '<td class="n">%s</td><td class="n">%s</td><td class="n">%s</td></tr>'
+      '<td class="n">%s</td><td class="n col-c1">%s</td><td class="n col-c2">%s</td><td class="n col-c3">%s</td>'
+      '<td class="n col-c4">%s</td><td class="n col-c5">%s</td></tr>'
       % (m['s25']['rank'], MD(), m['slug'], m['n'], n(m['s25']['bfi']),
          n(m['s25']['c1']), n(m['s25']['c2']), n(m['s25']['c3']),
          n(m['s25']['c4']), n(m['s25']['c5']))
@@ -418,7 +418,7 @@ def pg_2025():
         <h3>''' + L('Os 10 melhores em 2025', 'The top 10 in 2025') + '''</h3></div>
         <div class="tbl-wrap" style="border:0;border-radius:0">
         <table class="tbl"><thead><tr><th>#</th><th>''' + L('Município', 'Municipality') + '''</th>
-        <th>''' + L('Distrito', 'District') + '''</th>
+        <th class="col-dist">''' + L('Distrito', 'District') + '''</th>
         <th style="text-align:right">BFI</th><th style="text-align:right">''' + L('vs 2018', 'vs 2018') + '''</th></tr></thead>
         <tbody>''' + top_rows + '''</tbody></table></div>
       </div>
@@ -427,7 +427,7 @@ def pg_2025():
         <h3>''' + L('Os 10 com valor mais baixo', 'The 10 lowest scores') + '''</h3></div>
         <div class="tbl-wrap" style="border:0;border-radius:0">
         <table class="tbl"><thead><tr><th>#</th><th>''' + L('Município', 'Municipality') + '''</th>
-        <th>''' + L('Distrito', 'District') + '''</th>
+        <th class="col-dist">''' + L('Distrito', 'District') + '''</th>
         <th style="text-align:right">BFI</th><th style="text-align:right">vs 2018</th></tr></thead>
         <tbody>''' + bot_rows + '''</tbody></table></div>
       </div>
@@ -447,7 +447,7 @@ def pg_2025():
     </div>
     <div class="tbl-wrap">
       <table class="tbl"><thead><tr><th>#</th><th>''' + L('Capital', 'Capital') + '''</th>
-      <th style="text-align:right">BFI</th>''' + ''.join('<th style="text-align:right">%s</th>' % T(d['nome']) for d in DIMS) + '''</tr></thead>
+      <th style="text-align:right">BFI</th>''' + ''.join('<th class="col-c%d" style="text-align:right">%s</th>' % (ix + 1, T(d['nome'])) for ix, d in enumerate(DIMS)) + '''</tr></thead>
       <tbody>''' + cap_rows + '''</tbody></table>
     </div>
   </div>
@@ -531,7 +531,7 @@ def pg_2018():
     t18 = sorted([m for m in MUN if m['s18']], key=lambda m: m['s18']['rank'])
     top_rows = ''.join(
       '<tr><td class="n">%d</td><td class="nm"><a href="%s%s.html">%s</a></td>'
-      '<td>%s</td><td class="n">%s</td><td class="n">%s</td></tr>'
+      '<td class="col-dist">%s</td><td class="n">%s</td><td class="n">%s</td></tr>'
       % (m['s18']['rank'], MD(), m['slug'], m['n'], m['dist'], n(m['s18']['bfi']), n(m['s18c']['bfi']))
       for m in t18[:10])
 
@@ -622,7 +622,7 @@ def pg_2018():
         <h3>''' + L('Os 10 melhores', 'The top 10') + '''</h3></div>
         <div class="tbl-wrap" style="border:0;border-radius:0">
         <table class="tbl"><thead><tr><th>#</th><th>''' + L('Município', 'Municipality') + '''</th>
-        <th>''' + L('Distrito', 'District') + '''</th>
+        <th class="col-dist">''' + L('Distrito', 'District') + '''</th>
         <th style="text-align:right">BFI 2018</th>
         <th style="text-align:right">''' + L('Comparável', 'Comparable') + '''</th></tr></thead>
         <tbody>''' + top_rows + '''</tbody></table></div>
@@ -723,7 +723,7 @@ def pg_comparacao():
     def mv(rows):
         return ''.join(
           '<tr><td class="nm one" title="%s"><a href="%s%s.html">%s</a></td>'
-          '<td class="n">%d</td><td class="n">%d</td><td class="n"><span class="delta %s">%s</span></td>'
+          '<td class="n hide-s">%d</td><td class="n">%d</td><td class="n"><span class="delta %s">%s</span></td>'
           '<td class="n">%s</td></tr>'
           % (m['dist'], MD(), m['slug'], m['n'], m['s18c']['rank'], m['s25']['rank'],
              'up' if d > 0 else 'down', ('+' if d > 0 else '') + str(d),
@@ -731,7 +731,7 @@ def pg_comparacao():
           for m, d in rows)
 
     dims_tbl = ''.join(
-      '<tr><td><strong>%s</strong></td><td class="n">%s</td><td class="n">%s</td>'
+      '<tr><td><strong>%s</strong></td><td class="n hide-s">%s</td><td class="n">%s</td>'
       '<td class="n">%s</td><td class="n"><span class="delta %s">%s</span></td></tr>'
       % (T(d['nome']), n(S18[k]), n(S18C[k]), n(S25[k]),
          'up' if S25[k] - S18C[k] > 0 else 'down', sign(S25[k] - S18C[k]))
@@ -827,7 +827,7 @@ def pg_comparacao():
         </div>
         <div class="tbl-wrap" style="border:0;border-radius:0">
           <table class="tbl"><thead><tr><th>''' + L('Dimensão', 'Dimension') + '''</th>
-          <th style="text-align:right">''' + L('2018 publ.', '2018 publ.') + '''</th>
+          <th class="hide-s" style="text-align:right">''' + L('2018 publ.', '2018 publ.') + '''</th>
           <th style="text-align:right">''' + L('2018 comp.', '2018 comp.') + '''</th>
           <th style="text-align:right">2025</th>
           <th style="text-align:right">''' + L('Variação', 'Change') + '''</th></tr></thead>
@@ -894,7 +894,7 @@ def pg_comparacao():
         <h3>''' + L('Quem mais subiu no ranking', 'Biggest climbs in the ranking') + '''</h3></div>
         <div class="tbl-wrap" style="border:0;border-radius:0">
         <table class="tbl"><thead><tr><th>''' + L('Município', 'Municipality') + '''</th>
-        <th style="text-align:right">2018</th><th style="text-align:right">2025</th>
+        <th class="hide-s" style="text-align:right">2018</th><th style="text-align:right">2025</th>
         <th style="text-align:right">''' + L('Posições', 'Places') + '''</th>
         <th style="text-align:right">BFI</th></tr></thead>
         <tbody>''' + mv(rank_mov[:12]) + '''</tbody></table></div>
@@ -904,7 +904,7 @@ def pg_comparacao():
         <h3>''' + L('Quem mais desceu', 'Biggest drops') + '''</h3></div>
         <div class="tbl-wrap" style="border:0;border-radius:0">
         <table class="tbl"><thead><tr><th>''' + L('Município', 'Municipality') + '''</th>
-        <th style="text-align:right">2018</th><th style="text-align:right">2025</th>
+        <th class="hide-s" style="text-align:right">2018</th><th style="text-align:right">2025</th>
         <th style="text-align:right">''' + L('Posições', 'Places') + '''</th>
         <th style="text-align:right">BFI</th></tr></thead>
         <tbody>''' + mv(list(reversed(rank_mov[-12:]))) + '''</tbody></table></div>
@@ -1788,7 +1788,7 @@ def ficha(m, ordem):
           '<tr><td><strong>%s</strong><br><span class="small muted">%s %d%%</span></td>'
           '<td class="n cellbar"><i style="width:%.0f%%;background:var(--seq-300)"></i><span>%s</span></td>'
           '<td class="n">%s</td><td class="n"><span class="delta %s">%s</span></td>'
-          '<td class="n muted">%s</td></tr>'
+          '<td class="n muted hide-s">%s</td></tr>'
           % (T(d['nome']), L('peso', 'weight'), round(d['peso'] * 100),
              max(2, min(100, v / 10 * 100)), n(v),
              n(v18) if v18 is not None else '-', cls,
@@ -1855,7 +1855,7 @@ def ficha(m, ordem):
           <th style="text-align:right">2025</th>
           <th style="text-align:right">''' + L('2018 comp.', '2018 comp.') + '''</th>
           <th style="text-align:right">''' + L('Variação', 'Change') + '''</th>
-          <th style="text-align:right">''' + L('Média PT', 'PT average') + '''</th></tr></thead>
+          <th class="hide-s" style="text-align:right">''' + L('Média PT', 'PT average') + '''</th></tr></thead>
           <tbody>''' + ''.join(drows) + '''</tbody></table>
         </div>
       </div>

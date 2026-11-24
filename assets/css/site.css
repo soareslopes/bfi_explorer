@@ -148,7 +148,7 @@ p { margin: 0 0 1em; }
 }
 .icon-btn:hover { background: var(--surface-2); color: var(--ink); }
 .nav-toggle { display: none; }
-@media (max-width: 900px) {
+@media (max-width: 1160px) {
   .nav-links {
     position: absolute; top: 60px; left: 0; right: 0; flex-direction: column;
     align-items: stretch; gap: 0; padding: 8px; background: var(--surface-1);
@@ -759,3 +759,62 @@ table.tbl thead th { white-space: normal; line-height: 1.2; vertical-align: bott
 
 /* tabela dos pesos: colunas numericas centradas, cabecalho e celulas alinhados */
 .prose table th.c, .prose table td.c { text-align: center; }
+
+/* ---------------- tabelas: nunca com scroll lateral, so vertical ----------------
+   Nos ecras estreitos escondem-se as colunas secundarias em vez de rolar para o lado. */
+.tbl-wrap { overflow-x: hidden; }
+table.tbl { width: 100%; table-layout: auto; }
+table.tbl th, table.tbl td { overflow-wrap: break-word; }
+.prose table { width: 100%; }
+@media (max-width: 1180px) {
+  table.tbl .col-pop, table.tbl .col-cic { display: none; }
+}
+@media (max-width: 860px) {
+  table.tbl .col-dist { display: none; }
+  table.tbl th, table.tbl td { padding: 8px 8px; }
+}
+@media (max-width: 640px) {
+  table.tbl { font-size: .82rem; }
+  table.tbl th { font-size: .66rem; letter-spacing: .02em; }
+  table.tbl th, table.tbl td { padding: 7px 5px; }
+  table.tbl .col-c1, table.tbl .col-c2, table.tbl .col-c3,
+  table.tbl .col-c4, table.tbl .col-c5 { display: none; }
+  .cellbar { min-width: 0; }
+  .prose table { font-size: .84rem; }
+  .prose table th, .prose table td { padding: 7px 6px; }
+}
+
+/* menu recolhido mais cedo: com oito ligacoes a barra nao cabe abaixo de 1160px */
+/* grelhas de duas colunas definidas em linha colapsam em ecras estreitos */
+@media (max-width: 860px) { .grid-2, .grid-3 { grid-template-columns: 1fr !important; } }
+/* tabela do ranking: celulas mais compactas para caber sem rolar */
+.cellbar { min-width: 76px; padding: 5px 8px !important; }
+table.tbl th, table.tbl td { padding-left: 9px; padding-right: 9px; }
+.prose table th, .prose table td { overflow-wrap: anywhere; }
+
+/* colunas que saem em ecras muito estreitos */
+@media (max-width: 560px) { table.tbl .hide-s { display: none; } }
+
+/* ecras estreitos: tabela do ranking mais compacta, controlos que quebram linha,
+   avisos que nunca saem do ecra, campos que nao passam da largura */
+@media (max-width: 860px) {
+  .cellbar { min-width: 56px; padding: 4px 5px !important; }
+  table.tbl th, table.tbl td { padding-left: 6px; padding-right: 6px; }
+  table.tbl .col-rank { width: 40px !important; }
+}
+.seg { flex-wrap: wrap; max-width: 100%; }
+.controls .field { max-width: 100%; }
+.field input { min-width: 0; width: 100%; }
+@media (max-width: 560px) {
+  .alertpop .pop {
+    position: fixed; left: 12px; right: 12px; top: 72px; width: auto; max-width: none;
+    transform: translateY(-4px);
+  }
+  .alertpop[aria-expanded="true"] .pop { transform: none; }
+  .alertpop .pop::before { display: none; }
+}
+@media (max-width: 860px) {
+  table.tbl { font-size: .84rem; }
+  .cellbar { min-width: 46px; }
+  table.tbl thead th { font-size: .68rem; letter-spacing: .02em; }
+}
